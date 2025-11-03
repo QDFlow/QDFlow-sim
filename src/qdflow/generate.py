@@ -77,7 +77,7 @@ class CSDOutput:
     Output of charge stability diagram calculations. Some attributes may be ``None``
     depending on which quantities are calculated.
 
-    Attributes
+    Parameters
     ----------
     physics : PhysicsParameters
         The set of physics parameters used in the simulation. 
@@ -281,7 +281,7 @@ class PhysicsRandomization:
     (if no randmization is needed), or a ``distribution.Distribution`` object,
     from which the value will be drawn.
     
-    Attributes
+    Parameters
     ----------
     num_x_points : int
         The resolution of the x-axis. This value is not randomized.
@@ -891,7 +891,7 @@ class RaysOutput:
     Output of ray data calculations. Some attributes may be ``None``
     depending on which quantities are calculated.
 
-    Attributes
+    Parameters
     ----------
     physics : PhysicsParameters
         The set of physics parameters used in the simulation.

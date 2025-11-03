@@ -84,7 +84,7 @@ class NoiseParameters:
     """
     Set of parameters used to describe the various types and strengths of noise.
 
-    Attributes
+    Parameters
     ----------
     white_noise_magnitude : float
         Magnitude of the white noise to add to the data. The noise at each pixel
@@ -956,7 +956,7 @@ class NoiseRandomization:
     (if no randmization is needed), or a ``randomize.Distribution`` object,
     from which the value will be drawn.
 
-    Attributes
+    Parameters
     ----------
     noise_axis : int
         The axis along which to add telegraph noise, latching, and sech blur.

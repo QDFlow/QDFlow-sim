@@ -24,7 +24,7 @@ array([[3.825, 6.440, 4.821],
        [2.739, 5.512, 7.807]])    # random
 
 Distributions can be combined together with each other, as well as with scalars
-via basic operations +, -, *, /.
+via arithmatic operators ``+``, ``-``, ``*``, and ``/``.
 
 >>> dist_1 = distribution.Uniform(1,5)
 >>> dist_2 = distribution.Uniform(3,7)
@@ -149,7 +149,7 @@ class SumDistribution(Distribution[T], Generic[T]):
     """
     A distribution defined by the sum of the values drawn from two other distributions.
 
-    Attributes
+    Parameters
     ----------
     dist_1, dist_2 : Distribution[T] | T
         The distributions to add together.
@@ -195,7 +195,7 @@ class NegationDistribution(Distribution[T], Generic[T]):
     """
     A distribution defined by the negation of the value drawn from another distribution.
 
-    Attributes
+    Parameters
     ----------
     dist : Distribution[T]
         The distribution to negate.
@@ -227,7 +227,7 @@ class DifferenceDistribution(Distribution[T], Generic[T]):
     """
     A distribution defined by the difference of the values drawn from two other distributions.
 
-    Attributes
+    Parameters
     ----------
     dist_1, dist_2 : Distribution[T] | T
         The distributions from which take the difference ``dist_1 - dist_2``.
@@ -273,7 +273,7 @@ class ProductDistribution(Distribution[T], Generic[T]):
     """
     A distribution defined by the product of the values drawn from two other distributions.
 
-    Attributes
+    Parameters
     ----------
     dist_1, dist_2 : Distribution[T] | T
         The distributions to multiply together.
@@ -319,7 +319,7 @@ class QuotientDistribution(Distribution[Any]):
     """
     A distribution defined by the quotient of the values drawn from two other distributions.
 
-    Attributes
+    Parameters
     ----------
     dist_1, dist_2 : Distribution | Any
         The distributions from which take the quotient ``dist_1 / dist_2``.
@@ -368,7 +368,7 @@ class AbsDistribution(Distribution[T], Generic[T]):
     A distribution defined by the absolute value of the value drawn from
     another distribution.
 
-    Attributes
+    Parameters
     ----------
     dist : Distribution[T]
         The distribution to take the absolute value of.
@@ -396,7 +396,7 @@ class Delta(Distribution[T], Generic[T]):
     """
     A delta-function distribution which always returns `value`.
 
-    Attributes
+    Parameters
     ----------
     value : T
         The value that the delta-function distribution should return.
@@ -427,7 +427,7 @@ class Normal(Distribution[float]):
     """
     A normal distribution with the specified mean and standard deviation.
 
-    Attributes
+    Parameters
     ----------
     mean : float
         The mean of the normal distribution.
@@ -458,7 +458,7 @@ class Uniform(Distribution[float]):
     """
     A uniform distribution with range ``[min, max)``.
 
-    Attributes
+    Parameters
     ----------
     min : float
         The left side (inclusive) of the interval to draw from.
@@ -492,7 +492,7 @@ class LogNormal(Distribution[float]):
     Note that `mu` and `sigma` are the mean and standard deviation of the
     underlying normal distribution, not of the log-normal distribution itself.
 
-    Attributes
+    Parameters
     ----------
     mu : float
         The mean of the underlying normal distribution.
@@ -523,7 +523,7 @@ class LogUniform(Distribution[float]):
     """
     A log-uniform (reciprocal) distribution between `min` and `max`.
 
-    Attributes
+    Parameters
     ----------
     min : float
         The minimum value that can be drawn. Must be positive.
@@ -561,7 +561,7 @@ class Binary(Distribution[T], Generic[T]):
     A binary (Bernoulli) distribution, which returns `success` with
     probability `p`, and `fail` otherwise.
 
-    Attributes
+    Parameters
     ----------
     p : float
         The probability `success` will be returned. Must be between 0 and 1.
@@ -600,7 +600,7 @@ class Discrete(Distribution[int]):
     A uniform discrete distribution, which returns a value between
     `min` (inclusive) and `max` (exclusive).
 
-    Attributes
+    Parameters
     ----------
     min : int
         The minimum value that can be drawn. Default 0.
@@ -824,7 +824,7 @@ class FullyCorrelated(CorrelatedDistribution[T], Generic[T]):
     A ``CorrelatedDistribution`` which returns `n` copies of the value drawn from
     a ``Distribution``.
 
-    Attributes
+    Parameters
     ----------
     dist : Distribution[T]
         The distribution to draw values from.
@@ -860,7 +860,7 @@ class MatrixCorrelated(CorrelatedDistribution[T], Generic[T]):
     A ``CorrelatedDistribution`` which draws values from one or more distributions,
     then returns variables given by linear combinatons of those values.
 
-    Attributes
+    Parameters
     ----------
     matrix : NDArray
         An array with shape ``(num_variables, len(distributions))``.
@@ -896,7 +896,7 @@ class SphericallyCorrelated(CorrelatedDistribution[float]):
     from the surface of an `n`-dimensional hypershphere with the given radius
     (or radius drawn from the given ``Distribution``).
 
-    Attributes
+    Parameters
     ----------
     n : int
         The number of variables.

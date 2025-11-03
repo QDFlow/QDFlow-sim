@@ -82,7 +82,7 @@ class GateParameters:
     """
     Set of physical parameters defining a single gate.
 
-    Attributes
+    Parameters
     ----------
     mean : float
         The x-value (in nm) of the point along the nanowire where the gate
@@ -158,7 +158,7 @@ class PhysicsParameters:
     """
     Set of physical parameters of a quantum dot nanowire.
 
-    Attributes
+    Parameters
     ----------
     x : ndarray[float]
         1D array containing the x-values (in nm) used in the simulation.
@@ -333,7 +333,7 @@ class PhysicsParameters:
         """
         Creates a new ``PhysicsParameters`` object from a ``dict`` of values.
 
-        Attributes
+        Parameters
         ----------
         d : dict[str, Any]
             A dict with keys corresponding to any of this class's attributes.
@@ -404,7 +404,7 @@ class NumericsParameters:
     """
     Set of options for numeric calculations.
 
-    Attributes
+    Parameters
     ----------
     calc_n_max_iterations_no_guess : int
         The maximum number of iterations to perfom, if no initial guess for n(x)
@@ -516,7 +516,7 @@ class ThomasFermiOutput:
     Output of Thomas Fermi calculations. Some attributes may be ``None``
     depending on which quantities are calculated.
 
-    Attributes
+    Parameters
     ----------
 
     island_charges : ndarray[int]
