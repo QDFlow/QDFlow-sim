@@ -1042,7 +1042,7 @@ class NoiseRandomization:
         | None
     ) = None
     unint_dot_offset: float | Distribution[float] = 0.0
-    unint_dot_relative_width: float | Distribution[float] = 0.0
+    unint_dot_width: float | Distribution[float] = 0.0
     coulomb_peak_offset: float | Distribution[float] = 0.0
     coulomb_peak_width: float | Distribution[float] | None = None
     coulomb_peak_spacing: float | Distribution[float] = 1.0
@@ -1085,7 +1085,7 @@ class NoiseRandomization:
             unint_dot_magnitude=uim,
             unint_dot_spacing=Normal(30, 10).abs(),
             unint_dot_offset=Uniform(0, 1),
-            unint_dot_relative_width=Uniform(0.02, 0.03),
+            unint_dot_width=Uniform(0.02, 0.03),
             coulomb_peak_offset=Uniform(0, 1),
             coulomb_peak_width=Normal(2.0, 0.3).abs(),
             coulomb_peak_spacing=Normal(8, 1).abs(),
@@ -1220,8 +1220,7 @@ def random_noise_params(
     noise.unint_dot_spacing = all_spacing
     noise.unint_dot_offset = draw(r_p.unint_dot_offset, _rng)
     noise.unint_dot_width = (
-        np.sqrt(np.sum(all_spacing**2))
-        * np.abs(draw(r_p.unint_dot_relative_width, _rng))
+        np.abs(draw(r_p.unint_dot_width, _rng))
         if all_spacing is not None
         else 0.0
     )
