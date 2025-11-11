@@ -7,7 +7,7 @@ where = ["src"]
 
 [project]
 name = "qdflow"
-version = "1.0.0"
+version = "1.0.1"
 description = "Quantum dot simulation and noise modeling package"
 authors = [
   { name = "Donovan Buterakos", email = "dbuterak@umd.edu" },
