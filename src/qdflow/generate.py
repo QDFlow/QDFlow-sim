@@ -803,7 +803,7 @@ def calc_2d_csd(physics:simulation.PhysicsParameters,
                 V_x:NDArray[np.float64], V_y:NDArray[np.float64],
                 numerics:simulation.NumericsParameters|None=None,
                 include_excited:bool=True, include_converged=False,
-                include_current=True) -> CSDOutput:
+                include_current=False) -> CSDOutput:
     '''
     Calculates a charge-stability diagram for the case where there are only
     two dots.
