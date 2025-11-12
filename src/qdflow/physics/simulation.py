@@ -1,4 +1,4 @@
-"""
+'''
 This module defines the ``ThomasFermi`` class, which is responsible for
 simulating a quantum dot nanowire and calculating the
 particle (electron / hole) density, sensor readout, current, and state of the system.
@@ -16,14 +16,14 @@ Define an instance of the ``ThomasFermi`` class with the
 specified physical parameters.
 
 >>> output = tf_simulation.run_calculations()
->>> output.island_charges
+>>> output.integer_charges
 array([2, 2]) 
 
 Perform the calculation. The results are returned in a dataclass.
 In this example, the stable charge configuration has 2 electrons in each dot.
 This result will vary if a different set of physical parameters ``phys_params``
 are supplied to the ``ThomasFermi`` constructor.
-"""
+'''
 
 import numpy as np
 from numpy.typing import NDArray
@@ -40,7 +40,7 @@ from dataclasses import dataclass, field
 
 
 def calc_K_mat(x: NDArray[np.float64], K_0: float, sigma: float) -> NDArray[np.float64]:
-    """
+    '''
     Calculates the Coulomb interaction matrix.
 
     Parameters
@@ -71,7 +71,7 @@ def calc_K_mat(x: NDArray[np.float64], K_0: float, sigma: float) -> NDArray[np.f
 
     See eq. (2) in
     `J. Zwolak et al. PLoS ONE 13(10): e0205844. <https://doi.org/10.1371/journal.pone.0205844>`_.
-    """
+    '''
     dx = np.sqrt((x - np.expand_dims(x, -1)) ** 2 + sigma**2)
     K_matrix = K_0 / dx
     return K_matrix
@@ -79,7 +79,7 @@ def calc_K_mat(x: NDArray[np.float64], K_0: float, sigma: float) -> NDArray[np.f
 
 @dataclass(kw_only=True)
 class GateParameters:
-    """
+    '''
     Set of physical parameters defining a single gate.
 
     Parameters
@@ -99,7 +99,7 @@ class GateParameters:
     screen : float
         The screening length (in nm) for the Coulomb interaction between the
         gate and the particles in the nanowire.
-    """
+    '''
 
     mean: float = 0
     peak: float = 0
@@ -109,7 +109,7 @@ class GateParameters:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> Self:
-        """
+        '''
         Creates a new ``GateParameters`` object from a ``dict`` of values.
 
         Parameters
@@ -122,7 +122,7 @@ class GateParameters:
         -------
         GateParameters
             A new ``GateParameters`` object with the values specified by `d`.
-        """
+        '''
         output = cls()
         for k, v in d.items():
             if hasattr(output, k):
@@ -130,32 +130,32 @@ class GateParameters:
         return output
 
     def to_dict(self) -> dict[str, Any]:
-        """
+        '''
         Converts the ``GateParameters`` object to a ``dict``.
 
         Returns
         -------
         dict[str, Any]
             A dict with values specified by the ``GateParameters`` object.
-        """
+        '''
         return dataclasses.asdict(self)
 
     def copy(self) -> Self:
-        """
+        '''
         Creates a copy of a ``GateParameters`` object.
 
         Returns
         -------
         GateParameters
             A new ``GateParameters`` object with the same attribute values as ``self``.
-        """
+        '''
         return dataclasses.replace(self)
 
 
 
 @dataclass(kw_only=True)
 class PhysicsParameters:
-    """
+    '''
     Set of physical parameters of a quantum dot nanowire.
 
     Parameters
@@ -240,7 +240,7 @@ class PhysicsParameters:
         to determine the state of dot ``i``.
         If ``None``, automatically calculated from `gates` assuming an
         alternating pattern of barrier and plunger gates.
-    """
+    '''
 
     x: NDArray[np.float64] = field(
         default_factory=lambda: np.linspace(-300, 300, 151, endpoint=True)
@@ -330,7 +330,7 @@ class PhysicsParameters:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> Self:
-        """
+        '''
         Creates a new ``PhysicsParameters`` object from a ``dict`` of values.
 
         Parameters
@@ -343,7 +343,7 @@ class PhysicsParameters:
         -------
         PhysicsParameters
             A new ``PhysicsParameters`` object with the values specified by `d`.
-        """
+        '''
         output = cls()
         for k, v in d.items():
             if hasattr(output, k):
@@ -354,18 +354,18 @@ class PhysicsParameters:
         return output
 
     def to_dict(self) -> dict[str, Any]:
-        """
+        '''
         Converts the ``PhysicsParameters`` object to a ``dict``.
 
         Returns
         -------
         dict[str, Any]
             A dict with values specified by the ``PhysicsParameters`` object.
-        """
+        '''
         return dataclasses.asdict(self)
         
     def copy(self) -> Self:
-        """
+        '''
         Creates a deep copy of a ``PhysicsParameters`` object.
 
         Returns
@@ -373,7 +373,7 @@ class PhysicsParameters:
         PhysicsParameters
             A new ``PhysicsParameters`` object with the same attribute values as
             ``self``. This is a deep copy.
-        """
+        '''
         return dataclasses.replace(self)
 
 
@@ -401,7 +401,7 @@ PhysicsParameters.dot_regions = property(
 
 @dataclass(kw_only=True)
 class NumericsParameters:
-    """
+    '''
     Set of options for numeric calculations.
 
     Parameters
@@ -449,7 +449,7 @@ class NumericsParameters:
     create_graph_max_changes : int
         The maximum number of changes from the stable charge configuration
         to allow when creating the Markov graph.
-    """
+    '''
 
     calc_n_max_iterations_no_guess: int = 500
     calc_n_max_iterations_guess: int = 100
@@ -466,7 +466,7 @@ class NumericsParameters:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> Self:
-        """
+        '''
         Creates a new ``NumericsParameters`` object from a ``dict`` of values.
 
         Parameters
@@ -479,7 +479,7 @@ class NumericsParameters:
         -------
         NumericsParameters
             A new ``NumericsParameters`` object with the values specified by `d`.
-        """
+        '''
         output = cls()
         for k, v in d.items():
             if hasattr(output, k):
@@ -487,32 +487,32 @@ class NumericsParameters:
         return output
 
     def to_dict(self) -> dict[str, Any]:
-        """
+        '''
         Converts the ``NumericsParameters`` object to a ``dict``.
 
         Returns
         -------
         dict[str, Any]
             A dict with values specified by the ``NumericsParameters`` object.
-        """
+        '''
         return dataclasses.asdict(self)
 
     def copy(self) -> Self:
-        """
+        '''
         Creates a copy of a ``NumericsParameters`` object.
 
         Returns
         -------
         NumericsParameters
             A new ``NumericsParameters`` object with the same attribute values as ``self``.
-        """
+        '''
         return dataclasses.replace(self)
 
 
 
 @dataclass(kw_only=True)
 class ThomasFermiOutput:
-    """
+    '''
     Output of Thomas Fermi calculations. Some attributes may be ``None``
     depending on which quantities are calculated.
 
@@ -520,7 +520,7 @@ class ThomasFermiOutput:
     ----------
 
     island_charges : ndarray[int]
-        ``self.island_charges``, an array with length equal to
+        ``self.integer_charges``, an array with length equal to
         the number of islands representing the integer charge configuration
         which minimizes the capacitance energy.
     sensor : ndarray[float]
@@ -540,8 +540,8 @@ class ThomasFermiOutput:
         with the other dots padded with zeros.
     converged : bool
         Whether the calculation of n(x) properly converged.
-    inv_cap_matrix : ndarray[float]
-        The inverse capacitance matrix ``E_ij``.
+    energy_matrix : ndarray[float]
+        The energy matrix ``E_ij``.
     current : float
         ``self.current``, the current running through the wire.
     graph_charge : tuple[int, ...]
@@ -552,7 +552,7 @@ class ThomasFermiOutput:
         ``self.trans_count``, the number of transitions.
     n : ndarray[float]
         ``self.n``, the particle density n(x), (in 1/nm).
-    """
+    '''
 
     island_charges: NDArray[np.int_] = field(
         default_factory=lambda: np.zeros(0, dtype=np.int_)
@@ -570,7 +570,7 @@ class ThomasFermiOutput:
         default_factory=lambda: np.zeros(0, dtype=np.int_)
     )
     converged: bool = False
-    inv_cap_matrix: NDArray[np.float64] | None = None
+    energy_matrix: NDArray[np.float64] | None = None
     current: float | None = None
     graph_charge: tuple[int, ...] | None = None
     transition_count: int | None = None
@@ -603,10 +603,10 @@ class ThomasFermiOutput:
     def _set_dot_charges(self, val:NDArray[np.int_]):
         self._dot_charges = np.array(val, dtype=np.int_)
 
-    def _get_inv_cap_matrix(self) -> NDArray[np.float64]|None:
-        return self._inv_cap_matrix
-    def _set_inv_cap_matrix(self, val:NDArray[np.float64]|None):
-        self._inv_cap_matrix = np.array(val, dtype=np.float64) if val is not None else None
+    def _get_energy_matrix(self) -> NDArray[np.float64]|None:
+        return self._energy_matrix
+    def _set_energy_matrix(self, val:NDArray[np.float64]|None):
+        self._energy_matrix = np.array(val, dtype=np.float64) if val is not None else None
 
     def _get_n(self) -> NDArray[np.float64]|None:
         return self._n
@@ -615,7 +615,7 @@ class ThomasFermiOutput:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> Self:
-        """
+        '''
         Creates a new ``ThomasFermiOutput`` object from a ``dict`` of values.
 
         Parameters
@@ -628,7 +628,7 @@ class ThomasFermiOutput:
         -------
         ThomasFermiOutput
             A new ``ThomasFermiOutput`` object with the values specified by `d`.
-        """
+        '''
         output = cls()
         for k, v in d.items():
             if hasattr(output, k):
@@ -636,34 +636,33 @@ class ThomasFermiOutput:
         return output
 
     def to_dict(self) -> dict[str, Any]:
-        """
+        '''
         Converts the ``ThomasFermiOutput`` object to a ``dict``.
 
         Returns
         -------
         dict[str, Any]
             A dict with values specified by the ``ThomasFermiOutput`` object.
-        """
+        '''
         return dataclasses.asdict(self)
 
     def copy(self) -> Self:
-        """
+        '''
         Creates a copy of a ``ThomasFermiOutput`` object.
 
         Returns
         -------
         ThomasFermiOutput
             A new ``ThomasFermiOutput`` object with the same attribute values as ``self``.
-        """
+        '''
         return dataclasses.replace(self)
-
 
 ThomasFermiOutput.island_charges = property(ThomasFermiOutput._get_island_charges, ThomasFermiOutput._set_island_charges) # type: ignore
 ThomasFermiOutput.sensor = property(ThomasFermiOutput._get_sensor, ThomasFermiOutput._set_sensor) # type: ignore
 ThomasFermiOutput.are_dots_occupied = property(ThomasFermiOutput._get_are_dots_occupied, ThomasFermiOutput._set_are_dots_occupied) # type: ignore
 ThomasFermiOutput.are_dots_combined = property(ThomasFermiOutput._get_are_dots_combined, ThomasFermiOutput._set_are_dots_combined) # type: ignore
 ThomasFermiOutput.dot_charges = property(ThomasFermiOutput._get_dot_charges, ThomasFermiOutput._set_dot_charges) # type: ignore
-ThomasFermiOutput.inv_cap_matrix = property(ThomasFermiOutput._get_inv_cap_matrix, ThomasFermiOutput._set_inv_cap_matrix) # type: ignore
+ThomasFermiOutput.energy_matrix = property(ThomasFermiOutput._get_energy_matrix, ThomasFermiOutput._set_energy_matrix) # type: ignore
 ThomasFermiOutput.n = property(ThomasFermiOutput._get_n, ThomasFermiOutput._set_n) # type: ignore
 
 
@@ -694,7 +693,7 @@ def calc_V_gate(
 
 
 def calc_V_gate(gate_params: GateParameters, x, y, z, effective_peak=None):
-    """
+    '''
     Calculates the potential at a given set of points due to the given gate.
 
     This model assumes the gate behaves like a infinite cylindrical conductor of
@@ -717,7 +716,7 @@ def calc_V_gate(gate_params: GateParameters, x, y, z, effective_peak=None):
     -------
     float or ndarray[float]
         The (approximate) potential at each of the input points due to the gate.
-    """
+    '''
     peak = effective_peak if effective_peak is not None else gate_params.peak
     mean = gate_params.mean
     h = gate_params.h
@@ -735,7 +734,7 @@ def calc_V_gate(gate_params: GateParameters, x, y, z, effective_peak=None):
 
 
 def calc_effective_peaks(gate_param_list: list[GateParameters]) -> NDArray[np.float64]:
-    """
+    '''
     Calculates the effective potential at each gate of a set of gates.
 
     If more than one gate are in close proximity, the field from each gate will
@@ -752,7 +751,7 @@ def calc_effective_peaks(gate_param_list: list[GateParameters]) -> NDArray[np.fl
     -------
     ndarray[float]
         An array containing the effective potential peak of each gate.
-    """
+    '''
     gates = gate_param_list
     n_gates = len(gates)
     c_mat = np.zeros((n_gates, n_gates), dtype=np.float64)
@@ -797,7 +796,7 @@ def calc_V(
 
 
 def calc_V(gate_param_list: list[GateParameters], x, y, z, effective_peaks=None):
-    """
+    '''
     Calculates the potential at a given set of points due to a list of gates.
 
     Parameters
@@ -817,7 +816,7 @@ def calc_V(gate_param_list: list[GateParameters], x, y, z, effective_peaks=None)
     -------
     float or ndarray[float]
         The (approximate) potential at each of the input points due to the gate.
-    """
+    '''
     v_eff = (
         effective_peaks
         if effective_peaks is not None
@@ -832,17 +831,17 @@ def calc_V(gate_param_list: list[GateParameters], x, y, z, effective_peaks=None)
 
 
 class ConvergenceWarning(UserWarning):
-    """
+    '''
     A warning raised when the Thomas Fermi calculation of n(x)
     does not properly converge.
-    """
+    '''
 
     pass
 
 
 
 class ThomasFermi:
-    """
+    '''
     Thomas-Fermi simulation of a quantum dot nanowire.
 
     Given a specific set of physical parameters, this class can calculate
@@ -868,59 +867,23 @@ class ThomasFermi:
     --------
     PhysicsParameters : Physical device parameters
     NumericsParameters : Numeric options
-    """
+    '''
 
     def __init__(
         self,
         physics: PhysicsParameters | dict[str, Any],
         numerics: NumericsParameters | dict[str, Any] | None = None,
     ):
+
         self.physics: PhysicsParameters = (
             PhysicsParameters.from_dict(physics)
             if isinstance(physics, dict)
             else physics.copy()
         )
-        """
+        '''
         PhysicsParameters
-            ``PhysicsParameters`` with the physical device parameters
-        """
-
-        # calculate effective_peaks if not already specified
-        self.effective_peaks: NDArray[np.float64] = (
-            calc_effective_peaks(self.physics.gates)
-            if self.physics.effective_peaks is None
-            else self.physics.effective_peaks
-        )
-        """
-        ndarray[float]
-            1D array containing the effective peaks of each gate after including
-            the effects of induced charge from the other gates.
-        """
-
-        # calculate V if not already specified
-        self.V: NDArray[np.float64] = (
-            calc_V(self.physics.gates, self.physics.x, 0, 0, self.effective_peaks)
-            if self.physics.V is None
-            else self.physics.V
-        )
-        """
-        ndarray[float]
-            1D array containing the total potential ``V(x)`` (in mV) from all of the gates
-            at each of the x-values in `x`.
-        """
-
-        # calculate K_mat if not already specified
-        self.K_mat: NDArray[np.float64] = (
-            calc_K_mat(self.physics.x, self.physics.K_0, self.physics.sigma)
-            if self.physics.K_mat is None
-            else self.physics.K_mat
-        )
-        """
-        ndarray[float]
-            2D array, with length in each dimension equal to ``len(x)``,
-            where ``K_mat[i, j]`` gives the value of the Coulomb interaction
-            (in meV) between two particles at points ``x[i]`` and ``x[j]``.
-        """
+            ``PhysicsParameters`` dataclass with the physical device parameters
+        '''
 
         self.numerics: NumericsParameters = (
             NumericsParameters() if numerics is None else (
@@ -929,71 +892,80 @@ class ThomasFermi:
                 else NumericsParameters.from_dict(numerics)
             )
         )
-        """
-        dict[str, Any]
-            Dictionary with names and values for options for numeric calculations
-        """
+        '''
+        NumericsParameters
+            ``NumericsParameters`` dataclass with names and values for
+            options for numeric calculations
+        '''
 
-        self.delta_x: float = (self.physics.x[-1] - self.physics.x[0]) / (
-            len(self.physics.x) - 1
-        )
-        """
-        float
-            The spacing (in nm) between successive x-values of the simulation.
-        """
+        self.effective_peaks: NDArray[np.float64] 
+        '''
+        ndarray[float]
+            1D array containing the effective peaks of each gate after including
+            the effects of induced charge from the other gates.
+        '''
 
-        # calculate g0_dx_K_plus_1_inv if not already specified
-        self.g0_dx_K_plus_1_inv: NDArray[np.floating[Any]] = np.array([])
-        if self.numerics.calc_n_use_combination_method:
-            self.g0_dx_K_plus_1_inv = (
-                np.linalg.inv(
-                    self.physics.g_0 * self.delta_x * self.K_mat
-                    + np.identity(len(self.K_mat))
-                )
-                if self.physics.g0_dx_K_plus_1_inv is None
-                else self.physics.g0_dx_K_plus_1_inv
-            )
+        self.V: NDArray[np.float64]
+        '''
+        ndarray[float]
+            1D array containing the total potential ``V(x)`` (in mV) from all of the gates
+            at each of the x-values in `x`.
+        '''
+
+        self.K_mat: NDArray[np.float64]
+        '''
+        ndarray[float]
+            2D array, with length in each dimension equal to ``len(x)``,
+            where ``K_mat[i, j]`` gives the value of the Coulomb interaction
+            (in meV) between two particles at points ``x[i]`` and ``x[j]``.
+        '''
+
+        self.g0_dx_K_plus_1_inv: NDArray[np.floating[Any]]
+        '''
+        ndarray[float]
+            Inverse of ``(g_0 * delta_x * K_mat + identity)``.
+        '''
 
         self.n: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             The particle density n(x), (in 1/nm), found by solving the set of
             self-consistent equations, eqs. (1) & (2) of
             `J. Zwolak et al. PLoS ONE 13(10): e0205844. <https://doi.org/10.1371/journal.pone.0205844>`_.
             This array has the same length as ``physics.x``.
-        """
+        '''
 
         self.converged: bool = False
-        """
+        '''
         bool
             Whether or not the calculation of ``self.n`` properly converged
-        """
+        '''
 
         self.phi: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             The electron-electron Coulomb potential, equal to ``dot(K_mat, n) * delta_x``.
             This array has the same length as ``physics.x``.
-        """
+        '''
 
         self.qV_TF: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             The Thomas-Fermi potential, equal to ``q*V + dot(K_mat,n) * delta_x``
-        """
+        '''
 
         self.islands: NDArray[np.int_]
-        """
+        '''
         ndarray[int]
             An array of islands, where each island is a length-2 integer array
             ``[begin_index, end_index + 1]``.
             These islands correspond to segments of self.n that are above
             a certain cutoff value; however, segments bordering the left or
             right endpoints of ``physics.x`` are not included.
-        """
+        '''
 
         self.all_islands: NDArray[np.int_]
-        """
+        '''
         ndarray[int]
             An array of islands, where each island is a length-2 integer array
             ``[begin_index, end_index + 1]``.
@@ -1001,27 +973,27 @@ class ThomasFermi:
             a certain cutoff value. This is similar to self.islands, but
             includes segments bordering the left or right endpoints of
             ``physics.x``.
-        """
+        '''
 
         self.barriers: NDArray[np.int_]
-        """
+        '''
         ndarray[int]
             An array of barriers, where each barrier is a length-2 integer array
             ``[begin_index, end_index + 1]``.
             These barriers correspond to segments of self.n that are below
             a certain cutoff value.
-        """
+        '''
 
         self.tranmission_coef: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             An array with length equal to ``len(self.barriers)``,
             where each entry is the WKB transmission probability for the corresponding
             barrier.
-        """
+        '''
 
         self.p_WKB: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             An array with length equal to ``len(self.barriers)``,
             where each entry is the WKB transmission probability for the corresponding
@@ -1032,128 +1004,122 @@ class ThomasFermi:
             and is a measure of how frequently a particle in the island
             collides with a given wall of the island and attempts to tunnel
             out.
-        """
+        '''
 
         self.charges: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             An array with length equal to ``len(self.islands)``,
             where each value in the array is equal to the total number of
             particles on the corresponding island, found by integrating
             ``self.n`` over the region defined by the island.
-        """
+        '''
 
         self.charge_centers: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             An array with length equal to ``len(self.islands)``,
             where each value in the array is equal to the "center of mass"
             for the charges on the corresponding island, found by integrating
             ``x * n(x)`` over the region defined by the island.
-        """
+        '''
 
-        self.inv_cap_matrix: NDArray[np.float64]
-        """
+        self.energy_matrix: NDArray[np.float64]
+        '''
         ndarray[float]
             A 2d array representing the inverse capacitance matrix ``E_ij`` given by Eq. (5) of
             `J. Zwolak et al. PLoS ONE 13(10): e0205844. <https://doi.org/10.1371/journal.pone.0205844>`_.
-        """
+        '''
 
-        self.island_charges: NDArray[np.int_]
-        """
+        self.integer_charges: NDArray[np.int_]
+        '''
         ndarray[int]
             An array with length equal to ``len(self.islands)`` representing
             the integer charge configuration which minimizes the capacitance 
-            energy ``calc_cap_energy(self, self.island_charges)``.
-        """
+            energy ``calc_cap_energy(self, self.integer_charges)``.
+        '''
 
         self.G: networkx.DiGraph
-        """
+        '''
         networkx.DiGraph
             A Markov graph where nodes are tuples of integers, with 1 int per
             island representing the number of particles on each island.
             The graph is a directed graph with edges that have weights equal to
             ``calc_wieght(self, u, v)``, which are the transition rates between
             different charge configurations.
-        """
-
-        self.start_node: tuple[int, ...]
-        """
-        tuple[int, ...]
-            The starting node for the graph ``self.G``,
-            equal to ``tuple(self.island_charges)``.
-        """
+        '''
 
         self.dist: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             An array with length equal to ``len(self.G)`` representing
             the steady-state of the Markov graph.
-        """
+        '''
 
         self.graph_charge: tuple[int, ...]
-        """
+        '''
         tuple[int, ...]
             Tuple of integers with length equal to the number of islands,
             representing the node of ``self.G`` which has the highest
             probability in ``self.dist``.
-        """
+        '''
 
         self.current: float
-        """
+        '''
         float
             The current running through the wire, defined to be the sum over all
             tunneling events of: (rate at which the tunneling event occurs) *
             (``dist`` probability of initial node of tunneling event) *
             (change in number of particles in the Left sink)
-        """
+        '''
 
         self.sensor_output: NDArray[np.float64]
-        """
+        '''
         ndarray[float]
             An array of floats with length equal to ``len(physics.sensors)``
             indicating the Coulomb potential readout at each sensor.
-        """
+        '''
 
         self.are_dots_occupied: NDArray[np.bool_]
-        """
+        '''
         ndarray[bool]
             An array of booleans, one for each dot,
             indicating whether each dot is occupied.
-        """
+        '''
 
         self.are_dots_combined: NDArray[np.bool_]
-        """
+        '''
         ndarray[bool]
             An array of booleans, one for each internal barrier,
             indicating whether the dots on each side are combined together
             (i.e. the barrier is too low).
             ``len(self.are_dots_combined)`` will always equal ``len(self.are_dots_occupied) - 1``.
-        """
+        '''
 
         self.dot_charges: NDArray[np.int_]
-        """
+        '''
         dot_charges : ndarray[int]
             An array of integers, one for each dot, indicating the total number
             of charges in each dot. In the case of combined dots, the
             total number of charges will be entered in the left-most dot,
             with the other dots padded with zeros.
-        """
+        '''
 
         self.trans_count: int
-        """
+        '''
         int
-            The number of graph nodes adjacent to ``self.start_node`` such that
+            The number of graph nodes adjacent to ``self.graph_charge`` such that
             the incoming and outgoing weights between the nodes and
-            ``self.start_node`` are equal. Never greater than 2.
-        """
+            ``self.graph_charge`` are equal. Never greater than 2.
+        '''
 
         self.is_short_circuit: bool
-        """
+        '''
         bool
             ``True`` if the system is in a short circuit state, i.e. if n(x) is
             large over the entire length on the nanwire.
-        """
+        '''
+
 
     @staticmethod
     @jit(nopython=True, cache=True)
@@ -1172,8 +1138,12 @@ class ThomasFermi:
         use_combination_method: bool,
         g0_dx_K_plus_1_inv: NDArray[np.float64],
     ) -> tuple[NDArray[np.float64], NDArray[np.float64], bool]:
-        """
+        '''
         Calculates the particle density n(x) using numba.
+
+        This is done by by solving the set of self-consistent equations, eqs. (1) & (2) of
+        `J. Zwolak et al. PLoS ONE 13(10): e0205844. <https://doi.org/10.1371/journal.pone.0205844>`_
+        by using the successive iteration method.
 
         Parameters
         ----------
@@ -1224,7 +1194,7 @@ class ThomasFermi:
         converged : bool
             Whether the process converged to the required tolerance within
             the specified number of iterations.
-        """
+        '''
 
         def polylog_f_numba(x):
             y = beta * x
@@ -1307,22 +1277,52 @@ class ThomasFermi:
 
         return n, phi, converged
 
-    def _calc_n(self, n_guess: NDArray[np.float64] | None = None) -> NDArray[np.float64]:
-        """
+
+    @staticmethod
+    def calc_n(physics:PhysicsParameters, numerics:NumericsParameters,
+               V:NDArray[np.float64], K_mat:NDArray[np.float64],
+               g0_dx_K_plus_1_inv:NDArray[np.float64],
+               n_guess:NDArray[np.float64]|None=None
+               ) -> tuple[NDArray[np.float64], NDArray[np.float64], bool]:
+        '''
         Calculates the particle density n(x) using a ThomasFermi model.
-        Sets ``self.n`` equal to the result.
+        
+        This is done by by solving the set of self-consistent equations, eqs. (1) & (2) of
+        `J. Zwolak et al. PLoS ONE 13(10): e0205844. <https://doi.org/10.1371/journal.pone.0205844>`_
+        by using the successive iteration method.
 
         Parameters
         ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        numerics : NumericsParameters
+            ``NumericsParameters`` dataclass with names and values for
+            options for numeric calculations.
+        V : ndarray[float]
+            1D array containing the total potential ``V(x)`` (in mV) from all of the gates
+            at each of the x-values in ``physics.x``.
+        K_mat : ndarray[float]
+            2D array, with length in each dimension equal to ``len(x)``,
+            where ``K_mat[i, j]`` gives the value of the Coulomb interaction
+            (in meV) between two particles at points ``x[i]`` and ``x[j]``.
+        g0_dx_K_plus_1_inv : ndarray[float]
+            Inverse of ``(g_0 * delta_x * K_mat + identity)``.
         n_guess : ndarray[float], optional
             Initial guess (in 1/nm) for the particle density n(x).
             If ``None``, an array of zeros will be used.
 
         Returns
         -------
-        ndarray[float]
-            ``self.n``, the calculated particle density (in 1/nm).
-
+        n : ndarray[float]
+            The calculated particle density (in 1/nm).
+            This array has the same length as ``physics.x``.
+        phi : ndarray[float]
+            The electron-electron Coulomb potential, equal to ``dot(K_mat, n) * delta_x``.
+            This array has the same length as ``physics.x``.
+        converged : bool
+            Whether or not the calculation converged within the tolerance specified by
+            `numerics` within the allotted number of iterations.        
+            
         Raises
         ------
         ConvergenceWarning
@@ -1330,20 +1330,18 @@ class ThomasFermi:
             the specified number of iterations, given by ``self.numerics.calc_n_rel_tol``
             and ``self.numerics.calc_n_max_iterations_guess`` or 
             ``self.numerics.calc_n_max_iterations_no_guess``.
-        """
-        qV = self.V * self.physics.q
-        K_mat = self.K_mat
-        g_0 = self.physics.g_0
-        beta = self.physics.beta
-        mu = self.physics.mu
-        delta_x = self.delta_x
-        g0_dx_K_plus_1_inv = self.g0_dx_K_plus_1_inv
+        '''
+        qV = V * physics.q
+        g_0 = physics.g_0
+        beta = physics.beta
+        mu = physics.mu
+        delta_x = (physics.x[-1] - physics.x[0]) / (len(physics.x) - 1)
 
-        rel_tol = self.numerics.calc_n_rel_tol
-        coulomb_steps = self.numerics.calc_n_coulomb_steps
-        max_iterations = (self.numerics.calc_n_max_iterations_no_guess
-                if n_guess is None else self.numerics.calc_n_max_iterations_guess)
-        use_combination_method = self.numerics.calc_n_use_combination_method
+        rel_tol = numerics.calc_n_rel_tol
+        coulomb_steps = numerics.calc_n_coulomb_steps
+        max_iterations = (numerics.calc_n_max_iterations_no_guess
+                if n_guess is None else numerics.calc_n_max_iterations_guess)
+        use_combination_method = numerics.calc_n_use_combination_method
 
         # provide option to use a guess for n, phi to speed up computation
         if n_guess is not None:
@@ -1354,46 +1352,52 @@ class ThomasFermi:
             n = np.zeros(len(qV))
 
         # calculate
-        self.n, self.phi, converged = ThomasFermi.calc_n_numba(
-            n,
-            qV,
-            K_mat,
-            g_0,
-            beta,
-            mu,
-            delta_x,
-            rel_tol,
-            coulomb_steps,
-            use_n_guess,
-            max_iterations,
-            use_combination_method,
-            g0_dx_K_plus_1_inv,
-        )
+        n, phi, converged = ThomasFermi.calc_n_numba(n, qV, K_mat, g_0,
+                beta, mu, delta_x, rel_tol, coulomb_steps, use_n_guess,
+                max_iterations, use_combination_method, g0_dx_K_plus_1_inv)
         if not converged:
-            warnings.warn(
-                "ThomasFermi.calc_n() failed to converge.", ConvergenceWarning
-            )
-        self.converged = converged
-        return self.n
+            warnings.warn("ThomasFermi.calc_n() failed to converge.",
+                          ConvergenceWarning)
+        return n, phi, converged
 
-    def _calc_qV_TF(self) -> NDArray[np.float64]:
-        """
+
+    @staticmethod
+    def calc_qV_TF(physics:PhysicsParameters, V:NDArray[np.float64],
+                   K_mat:NDArray[np.float64], n:NDArray[np.float64]) -> NDArray[np.float64]:
+        '''
         Calculates the Thomas-Fermi potential (in meV),
-        equal to ``q*V + dot(K_mat,n)*delta_x``.
+        equal to ``q * V + dot(K_mat, n) * delta_x``.
 
-        Sets ``self.qV_TF`` equal to the result.
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        V : ndarray[float]
+            1D array containing the total potential ``V(x)`` (in mV) from all of the gates
+            at each of the x-values in ``physics.x``.
+        K_mat : ndarray[float]
+            2D array, with length in each dimension equal to ``len(x)``,
+            where ``K_mat[i, j]`` gives the value of the Coulomb interaction
+            (in meV) between two particles at points ``x[i]`` and ``x[j]``.
+        n : ndarray[float]
+            1D array containing the particle density (in 1/nm) at each of
+            the x-values in ``physics.x``.
 
         Returns
         -------
         ndarray[float]
-            ``self.qV_TF``, the Thomas-Fermi potential (in meV),
-            equal to ``q*V + dot(K_mat,n)*delta_x``.
-        """
-        self.qV_TF = self.physics.q * self.V + np.dot(self.K_mat, self.n) * self.delta_x
-        return self.qV_TF
+            The Thomas-Fermi potential (in meV),
+            equal to ``q * V + dot(K_mat, n) * delta_x``.
+        '''
+        delta_x = (physics.x[-1] - physics.x[0]) / (len(physics.x) - 1)
+        return physics.q * V + np.dot(K_mat, n) * delta_x
 
-    def _calc_islands_and_barriers(self) -> NDArray[np.int_]:
-        """
+
+    @staticmethod
+    def calc_islands_and_barriers(physics:PhysicsParameters,
+                numerics:NumericsParameters, n:NDArray[np.float64]
+                ) -> tuple[NDArray[np.int_], NDArray[np.int_], NDArray[np.int_], bool]:
+        '''
         Separates n(x) into islands of charge.
 
         Islands / barriers are defined by dividing the x-axis into segments
@@ -1404,21 +1408,39 @@ class ThomasFermi:
         However, segments bordering the left or right endpoints of
         ``physics.x`` are not included as islands.
 
-        This function sets ``self.islands`` equal to the list of islands,
-        sets ``self.all_islands`` equal to the list of islands including
-        the left and right sides, and sets ``self.barriers`` equal to the list
-        of calculated barriers.
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        numerics : NumericsParameters
+            ``NumericsParameters`` dataclass with names and values for
+            options for numeric calculations.
+        n : ndarray[float]
+            1D array containing the particle density (in 1/nm) at each of
+            the x-values in ``physics.x``.
 
         Returns
         -------
-
-        ndarray[int]
-            ``self.islands``, an array of islands, where each island is
-            a length-2 integer array: ``[begin_index, end_index + 1]``.
-        """
-
-        n = self.n
-        relative_cutoff = self.numerics.island_relative_cutoff
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            not including islands bordering the left or right endpoints of
+            ``physics.x``, where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
+        barriers : ndarray[int]
+            An array with shape ``(num_barriers, 2)`` giving the barriers,
+            where the ``i``-th barrier ``barriers[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the barrier.
+        all_islands : ndarray[int]
+            An array with shape ``(num_all_islands, 2)`` giving the islands,
+            including islands bordering the left or right endpoints of ``physics.x``.
+        is_short_circuit : bool
+            ``True`` if ``n`` is above the cutoff threshold everywhere along the x-axis,
+            ``False`` otherwise.
+        '''
+        delta_x = (physics.x[-1] - physics.x[0]) / (len(physics.x) - 1)
+        relative_cutoff = numerics.island_relative_cutoff
 
         # n_eps sets the scale below which an island is assumed to end
         # adaptive eps makes the calculation more robust
@@ -1436,8 +1458,8 @@ class ThomasFermi:
 
         for isl in islands:
             if (
-                np.sum(n[isl[0] : isl[1]]) * self.delta_x
-                < self.numerics.island_min_occupancy
+                np.sum(n[isl[0] : isl[1]]) * delta_x
+                < numerics.island_min_occupancy
             ):
                 for i in range(isl[0], isl[1]):
                     n_chop[i + 1] = 0
@@ -1449,32 +1471,33 @@ class ThomasFermi:
         n_diff = np.abs(np.diff(n_chop_bar))
         barriers = np.where(n_diff == 1)[0].reshape(-1, 2)
 
-        self.all_islands = islands
+        all_islands = islands
 
         # certain edge cases handled here
         if len(islands) == 0:
             # The system is a complete barrier with no islands, n = 0
-            self.is_short_circuit = False
+            is_short_circuit = False
         elif len(islands) == 1 and islands[0][0] == 0 and islands[0][1] == (len(n)):
             # short-circuit condition with electron density all over
             islands = islands[1:]
-            self.is_short_circuit = True
+            is_short_circuit = True
         else:
-            self.is_short_circuit = False
+            is_short_circuit = False
         # if left and right leads are present, they are popped off since
-        #    they do not form quantum dot islands
+        # they do not form quantum dot islands
         if len(islands) > 0 and islands[0][0] == 0:
             islands = islands[1:]
         if len(islands) > 0 and islands[-1][1] == (len(n)):
             islands = islands[:-1]
 
-        self.islands = islands
-        self.barriers = barriers
+        return islands, barriers, all_islands, is_short_circuit
 
-        return self.islands
 
-    def _calc_WKB_prob(self) -> NDArray[np.float64]:
-        """
+    @staticmethod
+    def calc_WKB_prob(physics:PhysicsParameters, qV_TF:NDArray[np.float64],
+                      islands:NDArray[np.int_], barriers:NDArray[np.int_],
+                      is_short_circuit:bool) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        '''
         Calculates the transition rates between islands.
 
         For each barrier, this function calculates the WKB probability of transmission through
@@ -1488,118 +1511,189 @@ class ThomasFermi:
         and is a measure of how frequently an particle in the island
         collides with a given wall of the island and attempts to tunnel out.
 
-        Sets ``self.p_WKB`` equal to the result.
-
-        Additionally, this function sets ``self.transmission_coef`` to the
-        transmission coefficients.
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        qV_TF : ndarray[float]
+            The Thomas-Fermi potential (in meV), equal to ``q * V + dot(K_mat, n) * delta_x``.
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
+        barriers : ndarray[int]
+            An array with shape ``(num_barriers, 2)`` giving the barriers,
+            where the ``i``-th barrier ``barriers[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the barrier.
+        is_short_circuit : bool
+            ``True`` if ``n`` is above the cutoff threshold everywhere along
+            the x-axis, ``False`` otherwise.
 
         Returns
         -------
+        p_WKB : ndarray[float]
+            An array with length equal to the number of barriers, where each
+            entry is the transition rate across the corresponding barrier.
+            This is calculated by multiplying the transition probability by
+            the rate at which particles collide with the barrier.
+            Returns ``[0]`` if there are no islands.
+        tranmission_coef : ndarray[float]
+            An array with length equal to the number of barriers, where each
+            entry is the transition probability across the corresponding barrier.
+        '''
+        delta_x = (physics.x[-1] - physics.x[0]) / (len(physics.x) - 1)
 
-        ndarray[float]
-            ``self.p_WKB``, an array with length equal to the number of
-            barriers, where each entry is the transition probability across
-            the corresponding barrier. Returns ``[physics.WKB_prob]``
-            if there are no islands.
-        """
-
-        self.tranmission_coef = np.zeros(len(self.barriers))
-        self.p_WKB = np.zeros(len(self.barriers))
+        tranmission_coef = np.zeros(len(barriers))
+        p_WKB = np.zeros(len(barriers))
 
         # if there is a short circuit, then a default rate is set
-        if self.is_short_circuit:
-            return self.p_WKB
+        if is_short_circuit:
+            return p_WKB, tranmission_coef
 
-        x = self.physics.x
-        qV_TF = self.qV_TF
-        mu = self.physics.mu
-        WKB_coef = self.physics.WKB_coef
+        x = physics.x
+        mu = physics.mu
+        WKB_coef = physics.WKB_coef
 
         # in order to handle negative values near the boundaries, I have put in abs
         k = WKB_coef * np.sqrt(np.abs(qV_TF - mu))
-        for i in range(len(self.barriers)):
-            bar_start = self.barriers[i][0]
-            bar_end = self.barriers[i][1]
+        for i in range(len(barriers)):
+            bar_start = barriers[i][0]
+            bar_end = barriers[i][1]
             prob = np.exp(
                 -2 * scipy.integrate.simpson(k[bar_start:bar_end], x[bar_start:bar_end])
             )
-
-            self.tranmission_coef[i] = prob
+            tranmission_coef[i] = prob
 
         # calculate attempt rates only if islands are present
-        if len(self.islands) >= 1:
+        if len(islands) >= 1:
             attempt_rate = []
-            for i in range(len(self.islands)):
-                island_start = self.islands[i][0]
-                island_end = self.islands[i][1]
+            for i in range(len(islands)):
+                island_start = islands[i][0]
+                island_end = islands[i][1]
                 # classical round trip time
                 attempt_time = (
-                    2 * (island_end - island_start) * self.delta_x / self.physics.v_F
+                    2 * (island_end - island_start) * delta_x / physics.v_F
                 )
                 rate = 1 / attempt_time
                 attempt_rate.append(rate)
-            # For each island, there are two barriers
+            # For each island, there are two barriers.
             # The attempt rate is both tunneling probabilities of the two barriers
-            #      is set equal to island formed by the barriers
+            # is set equal to island formed by the barriers.
             # For a barrier enclosed by two islands, the average attempt rate
-            #     is used of the two islands
+            # is used of the two islands.
             attempt_rate_vec_left = np.array([attempt_rate[0]] + attempt_rate)
             attempt_rate_vec_right = np.array(attempt_rate + [attempt_rate[-1]])
             attempt_rate_vec = 0.5 * (attempt_rate_vec_left + attempt_rate_vec_right)
-            self.p_WKB = attempt_rate_vec * self.tranmission_coef
+            p_WKB = attempt_rate_vec * tranmission_coef
 
-        return self.p_WKB
+        return p_WKB, tranmission_coef
 
-    def _calc_charges(self) -> NDArray[np.float64]:
-        """
+
+    @staticmethod
+    def calc_charges(physics:PhysicsParameters, n:NDArray[np.float64],
+                     islands:NDArray[np.int_]) -> NDArray[np.float64]:
+        '''
         Calculates the total charge for each island by summing
-        ``self.n`` over the region defined by each island.
+        ``n`` over the region defined by each island.
 
-        Sets ``self.charges`` equal to the result.
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        n : ndarray[float]
+            1D array containing the particle density (in 1/nm) at each of
+            the x-values in ``physics.x``.
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
 
         Returns
         -------
-        ndarray[float]
-            ``self.charges``, an array with length equal to the number of
-            islands, where each entry of the array is the total induced charge
-            on the corresponding island. (Technically particle number,
-            does not take into account ``q``).
-        """
-        charges = np.zeros(len(self.islands), dtype=np.float64)
-        for i, isl in enumerate(self.islands):
-            charges[i] = np.sum(self.n[isl[0] : isl[1]]) * self.delta_x
-        self.charges = charges
-        return self.charges
+        charges : ndarray[float]
+            An array with length equal to the number of
+            islands, where each entry of the array is the total induced
+            prticle number on the corresponding island.
+        '''
+        delta_x = (physics.x[-1] - physics.x[0]) / (len(physics.x) - 1)
+        charges = np.zeros(len(islands), dtype=np.float64)
+        for i, isl in enumerate(islands):
+            charges[i] = np.sum(n[isl[0] : isl[1]]) * delta_x
+        return charges
 
-    def _calc_charge_centers(self) -> NDArray[np.float64]:
-        """
+
+    @staticmethod
+    def calc_charge_centers(physics:PhysicsParameters, n:NDArray[np.float64],
+                     islands:NDArray[np.int_]) -> NDArray[np.float64]:
+        '''
         Calculates the center of each charge island by summing ``n * x`` over
         the region defined by each island and dividing by the total charge
         (this is similar to a center of mass calculation).
 
-        Sets ``self.charge_centers`` equal to the result.
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        n : ndarray[float]
+            1D array containing the particle density (in 1/nm) at each of
+            the x-values in ``physics.x``.
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
 
         Returns
         -------
         ndarray[float]
-            ``self.charge_centers``, an array of charges with length equal to
-            ``len[islands]`` found by summing ``n * x`` over the region defined
-            by each island and dividing by the total charge.
-        """
-        charge_centers = np.zeros(len(self.islands), dtype=np.float64)
-        for i, isl in enumerate(self.islands):
+            An array with length equal to ``len[islands]`` which gives the
+            center of the charge distribution over each island, by summing
+            ``n * x`` over the island and dividing by the island's charge.
+        '''
+        charge_centers = np.zeros(len(islands), dtype=np.float64)
+        for i, isl in enumerate(islands):
             charge_centers[i] = np.sum(
-                self.n[isl[0] : isl[1]] * self.physics.x[isl[0] : isl[1]]
-            ) / np.sum(self.n[isl[0] : isl[1]])
-        self.charge_centers = charge_centers
-        return self.charge_centers
+                n[isl[0]:isl[1]] * physics.x[isl[0]:isl[1]]
+            ) / np.sum(n[isl[0]:isl[1]])
+        return charge_centers
 
-    def _calc_inv_cap_matrix(self) -> NDArray[np.float64]:
-        """
-        Calculates the inverse capacitance matrix for the system.
+
+    @staticmethod
+    def calc_energy_matrix(physics:PhysicsParameters,
+                numerics:NumericsParameters, K_mat: NDArray[np.float64],
+                n:NDArray[np.float64], islands:NDArray[np.int_],
+                charges:NDArray[np.float64]) -> NDArray[np.float64]:
+        '''
+        Calculates the energy matrix for the system.
+
         See eq. (5) of `J. Zwolak et al. PLoS ONE 13(10): e0205844. <https://doi.org/10.1371/journal.pone.0205844>`_.
 
-        Sets ``self.inv_cap_matrix`` equal to the result.
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        numerics : NumericsParameters
+            ``NumericsParameters`` dataclass with names and values for
+            options for numeric calculations.
+        K_mat : ndarray[float]
+            2D array, with length in each dimension equal to ``len(x)``,
+            where ``K_mat[i, j]`` gives the value of the Coulomb interaction
+            (in meV) between two particles at points ``x[i]`` and ``x[j]``.
+        n : ndarray[float]
+            1D array containing the particle density (in 1/nm) at each of
+            the x-values in ``physics.x``.
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
+        charges : ndarray[float]
+            An array with length equal to the number of
+            islands, where each entry of the array is the total induced
+            prticle number on the corresponding island.
 
         Returns
         -------
@@ -1615,11 +1709,8 @@ class ThomasFermi:
         This function differs from eq. (5) of
         `J. Zwolak et al. PLoS ONE 13(10): e0205844. <https://doi.org/10.1371/journal.pone.0205844>`_
         in that it includes a factor of 0.5 in the second term.
-        """
-        capacitance_matrix_softening = self.numerics.cap_model_matrix_softening
-
-        islands = self.islands
-        n = self.n
+        '''
+        capacitance_matrix_softening = numerics.cap_model_matrix_softening
 
         # list of charge densities for islands
         n_list = []
@@ -1628,10 +1719,9 @@ class ThomasFermi:
             n_island[isl[0] : isl[1]] = n[isl[0] : isl[1]]
             n_list.append(n_island)
 
-        c_k = self.physics.c_k
-        Z = self.charges
-        K_mat = self.K_mat
-        delta_x = self.delta_x
+        c_k = physics.c_k
+        Z = charges
+        delta_x = (physics.x[-1] - physics.x[0]) / (len(physics.x) - 1)
         delta_x_sq = delta_x * delta_x
 
         def cap_func(i, j):
@@ -1651,12 +1741,13 @@ class ThomasFermi:
             ]
         ).reshape((len(n_list), len(n_list)))
 
-        self.inv_cap_matrix = energy_matrix
+        return energy_matrix
 
-        return self.inv_cap_matrix
 
-    def _calc_cap_energy(self, N_vec: NDArray[np.float64]) -> float:
-        """
+    @staticmethod
+    def calc_cap_energy(N_vec:NDArray[np.float64], energy_matrix:NDArray[np.float64],
+                        charges:NDArray[np.float64]) -> float:
+        '''
         Calculates the capacitance energy (in meV) of a given charge configuration.
 
         Parameters
@@ -1664,93 +1755,103 @@ class ThomasFermi:
         N_vec : ndarray[float]
             The charge configuration array. A 1d array with length equal to the
             number of islands specifying the number of charges on each island.
+        energy_matrix : ndarray[float]
+            A 2D array with shape ``(len(charges), len(charges))`` giving the energy
+            matrix (in meV) in the capacitance model.
+        charges : ndarray[float]
+            An array with length equal to the number of
+            islands, where each entry of the array is the total induced
+            prticle number on the corresponding island.
 
         Returns
         -------
         float
             The capacitance energy (in meV) of the given charge configuration, given by
-            ``(N_vec - Z) E (N_vec - Z)^T``, where ``E == self.inv_cap_matrix``.
-        """
-        N_vec = np.array(N_vec)
-        inv_cap_matrix = self.inv_cap_matrix
-        charges = self.charges
-        return np.dot(np.dot((N_vec - charges), inv_cap_matrix), (N_vec - charges).T)
+            ``(N_vec - Z) E (N_vec - Z)^T``, where ``E == energy_matrix``.
+        '''
+        return np.dot(np.dot((N_vec - charges), energy_matrix), (N_vec - charges).T)
 
-    def _calc_stable_config(self) -> NDArray[np.int_]:
-        """
-        Calculates stable charge configuration, the configuration ``Q`` which
-        minimizes ``self.calc_cap_energy(Q)``.
+
+    @staticmethod
+    def calc_integer_charges(numerics:NumericsParameters, charges:NDArray[np.float64]) -> NDArray[np.int_]:
+        '''
+        Calculates stable integer charge configuration.
+         
+        This is the configuration ``Q`` which minimizes
+        ``calc_cap_energy(Q, energy_matrix, charges)``.
+
+        Parameters
+        ----------
+        numerics : NumericsParameters
+            ``NumericsParameters`` dataclass with names and values for
+            options for numeric calculations.
+        charges : ndarray[float]
+            An array with length equal to the number of
+            islands, where each entry of the array is the total induced
+            prticle number on the corresponding island.
 
         Returns
         -------
         ndarray[int]
             The charge configuration array which minimizes the capacitance energy.
             A 1d array with length equal to the number of islands specifying the
-            number of charges on each island.
-        """
-        Z = self.charges
+            integer number of charges on each island.
+        '''
+        Z = charges
 
         N_int = [int(np.floor(x)) for x in Z]
-        N_limit = self.numerics.stable_config_N_limit
+        N_limit = numerics.stable_config_N_limit
 
         dN_list = [range(max(0, x - N_limit + 1), x + N_limit + 1, 1) for x in N_int]
         N_list = list(itertools.product(*dN_list))
 
-        energy_table = [self._calc_cap_energy(np.array(x)) for x in N_list]
+        energy_table = [ThomasFermi.calc_cap_energy(np.array(x)) for x in N_list]
         min_energy = min(energy_table)
-        island_charges = N_list[energy_table.index(min_energy)]
-        self.island_charges = np.array(island_charges, dtype=int)
+        integer_charges = N_list[energy_table.index(min_energy)]
+        integer_charges = np.array(integer_charges, dtype=int)
 
-        return self.island_charges
+        return integer_charges
 
-    def _fermi(self, E: NDArray[np.float64] | float) -> NDArray[np.float64] | float:
-        """
+
+    @staticmethod
+    def fermi(physics:PhysicsParameters, E:NDArray[np.float64]|float) -> NDArray[np.float64]|float:
+        '''
         Calculates the fermi distribution at a given energy (or array of
         energies), with ``kT`` given by ``self.physics``.
 
         Parameters
         ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
         E : float or ndarray[float]
             The energy / energies (in meV) for which to evaluate the
             fermi distribution.
 
         Returns
         -------
-        float or ndarray[float]
+        float | ndarray[float]
             A scalar or ndarray with the same shape as ``E`` with values equal
             to the fermi distribution at ``E``.
-        """
-        kT = self.physics.kT
+        '''
+        kT = physics.kT
         return scipy.special.expit(-E / kT)
 
-    # note: This function is unused
-    def _dfermi(self, E: NDArray[np.float64] | float) -> NDArray[np.float64] | float:
-        """
-        Calculates the derivative (in 1/meV) of the fermi distribution at a given
-        energy (or array of energies), with ``kT`` given by ``self.physics``.
 
-        Parameters
-        ----------
-        E : float or ndarray[float]
-            The energy / energies (in meV) for which to evaluate the
-            derivative of the fermi distribution.
-
-        Returns
-        -------
-        float or ndarray[float]
-            A scalar or ndarray with the same shape as ``E`` with values equal
-            to the derivative of the fermi distribution at ``E`` (in 1/meV).
-        """
-        kT = self.physics.kT
-        dfermi = scipy.special.expit(-E / kT) ** 2 * (-1 / kT) * np.exp(E / kT)
-        return dfermi
-
-    def _calc_weight(self, u: NDArray[np.int_], v: NDArray[np.int_]) -> float:
-        """
+    @staticmethod
+    def calc_weight(physics:PhysicsParameters, num_islands:int, p_WKB:NDArray[np.float64],
+                    u:NDArray[np.int_], v:NDArray[np.int_]) -> float:
+        '''
         Calculates the transition rate from one configuration to another.
 
         Parameters
         ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        num_islands : int
+            The number of islands, equal to ``len(islands)``.
+        p_WKB : ndarray[float]
+            An array with length equal to the number of barriers, where each
+            entry is the transition rate across the corresponding barrier.
         u, v : ndarray[int]
             The initial and final charge configuration arrays. These are 1d
             arrays with length equal to the number of islands specifying the
@@ -1763,17 +1864,16 @@ class ThomasFermi:
             ``(self.p_WKB) * fermi(delta_E)``, where ``delta_E`` is the energy
             difference between ``u`` and ``v`` (including the energy of the
             particle escaping into the left / right bath if applicable).
-        """
+        '''
         diff = list(np.array(v) - np.array(u))
         nonzero_diff = np.nonzero(diff)[0]
-        num_isls = len(self.islands)
 
         # check to make sure u -> v is a valid transition
         if len(nonzero_diff) == 0:
             return 0.0
         idx = nonzero_diff[0]
         if len(nonzero_diff) == 1:
-            if idx > 0 and idx < num_isls - 1:
+            if idx > 0 and idx < num_islands - 1:
                 return 0.0
         elif len(nonzero_diff) == 2:
             if nonzero_diff[1] - nonzero_diff[0] != 1:
@@ -1785,73 +1885,87 @@ class ThomasFermi:
         if diff[idx] != 1 and diff[idx] != -1:
             return 0.0
 
-        E_u = self._calc_cap_energy(np.array(u))
-        E_v = self._calc_cap_energy(np.array(v))
+        E_u = ThomasFermi.calc_cap_energy(np.array(u))
+        E_v = ThomasFermi.calc_cap_energy(np.array(v))
 
-        mu_L = self.physics.V_L * self.physics.q
-        mu_R = self.physics.V_R * self.physics.q
+        mu_L = physics.V_L * physics.q
+        mu_R = physics.V_R * physics.q
 
         weight = 0.0
 
-        if num_isls == 1:
+        if num_islands == 1:
             if diff[0] == 1:
-                weight = self.p_WKB[0] * self._fermi(E_v - E_u - mu_L) \
-                       + self.p_WKB[1] * self._fermi(E_v - E_u - mu_R)
+                weight = p_WKB[0] * ThomasFermi.fermi(physics, E_v - E_u - mu_L) \
+                       + p_WKB[1] * ThomasFermi.fermi(physics, E_v - E_u - mu_R)
             elif diff[0] == -1:
-                weight = self.p_WKB[0] * (1 - self._fermi(E_u - E_v - mu_L)) \
-                       + self.p_WKB[1] * (1 - self._fermi(E_u - E_v - mu_R))
+                weight = p_WKB[0] * (1 - ThomasFermi.fermi(physics, E_u - E_v - mu_L)) \
+                       + p_WKB[1] * (1 - ThomasFermi.fermi(physics, E_u - E_v - mu_R))
 
         # Multi-island handling
-        elif num_isls > 1:
+        elif num_islands > 1:
             # Electrons coming or leaving from edges
             if idx == 0 and diff[idx] == 1:
-                weight = self.p_WKB[0] * self._fermi(E_v - E_u - mu_L)
-            elif idx == num_isls - 1 and diff[idx] == 1:
-                weight = self.p_WKB[-1] * self._fermi(E_v - E_u - mu_R)
+                weight = p_WKB[0] * ThomasFermi.fermi(physics, E_v - E_u - mu_L)
+            elif idx == num_islands - 1 and diff[idx] == 1:
+                weight = p_WKB[-1] * ThomasFermi.fermi(physics, E_v - E_u - mu_R)
             elif idx == 0 and diff[idx] == -1:
-                weight = self.p_WKB[0] * (1 - self._fermi(E_u - E_v - mu_L))
-            elif idx == num_isls - 1 and diff[idx] == -1:
-                weight = self.p_WKB[-1] * (1 - self._fermi(E_u - E_v - mu_R))
+                weight = p_WKB[0] * (1 - ThomasFermi.fermi(physics, E_u - E_v - mu_L))
+            elif idx == num_islands - 1 and diff[idx] == -1:
+                weight = p_WKB[-1] * (1 - ThomasFermi.fermi(physics, E_u - E_v - mu_R))
             # This gets interdot transitions
             elif diff[idx] == 1 and diff[idx + 1] == -1:
-                weight = self.p_WKB[idx + 1] * self._fermi(E_v - E_u)
+                weight = p_WKB[idx + 1] * ThomasFermi.fermi(physics, E_v - E_u)
             elif diff[idx] == -1 and diff[idx + 1] == 1:
-                weight = self.p_WKB[idx + 1] * self._fermi(E_v - E_u)
+                weight = p_WKB[idx + 1] * ThomasFermi.fermi(physics, E_v - E_u)
 
         return weight
+    
 
-    def _create_graph(self) -> networkx.DiGraph:
-        """
+    @staticmethod
+    def create_graph(physics:PhysicsParameters, numerics:NumericsParameters,
+                     integer_charges:NDArray[np.int_], p_WKB:NDArray[np.float64]) -> networkx.DiGraph:
+        '''
         Creates the Markov graph of charge configurations.
 
         Nodes are tuples of integers representing the number of particles on
-        each island. The graph is a directed graph with weights equal to:
-        ``self.calc_wieght(u, v)``.
+        each island. The graph is a directed graph with weights between ``u``
+        and ``v`` equal to ``calc_wieght(physics, islands, p_WKB, u, v)``.
         All nodes in the graph differ from the least-energy configuration
-        by a number of particles no more than
-        ``self.numerics.create_graph_max_changes``.
+        by a number of particles no more than ``numerics.create_graph_max_changes``.
 
-        This method sets ``self.start_node`` equal to ``tuple(self.island_charges)``,
-        and sets ``self.G`` equal to the resulting graph.
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        numerics : NumericsParameters
+            ``NumericsParameters`` dataclass with names and values for
+            options for numeric calculations.
+        integer_charges : ndarray[int]
+            The charge configuration array which minimizes the capacitance energy.
+            A 1d array with length equal to the number of islands specifying the
+            integer number of charges on each island.
+        p_WKB : ndarray[float]
+            An array with length equal to the number of barriers, where each
+            entry is the transition rate across the corresponding barrier.
 
         Returns
         -------
         networkx.DiGraph
-            ``self.G``, a graph with tuple[int, ...] nodes representing possible
+            A graph with tuple[int, ...] nodes representing possible
             charge configurations. This graph is a Markov graph where edges
             represent the transition rates between possible configurations.
-        """
-        max_changes = self.numerics.create_graph_max_changes
+        '''
+        max_changes = numerics.create_graph_max_changes
 
-        self.G = networkx.DiGraph()
+        G = networkx.DiGraph()
 
-        self.start_node = tuple(self.island_charges)
+        start_node = tuple(integer_charges)
 
-        num_isls = len(self.islands)
+        num_isls = len(integer_charges)
 
         if num_isls == 0:
-            self.G.add_node(())
-            return self.G
+            G.add_node(())
+            return G
 
         # any deltas are allowed such that sum(abs(delta)) <= max_changes
         def calc_deltas(num_isl, max_ch):
@@ -1889,29 +2003,43 @@ class ThomasFermi:
 
         # add nodes to graph
         for delta in deltas:
-            node = np.array(self.start_node) + delta
+            node = np.array(start_node) + delta
             # Check for negative num of electrons
             if np.all(node >= 0):
-                self.G.add_node(tuple(node))
+                G.add_node(tuple(node))
 
-        for x in list(self.G.nodes()):
-            for y in list(self.G.nodes()):
+        for x in list(G.nodes()):
+            for y in list(G.nodes()):
                 if x != y:
-                    self.G.add_edge(x, y, weight=self._calc_weight(x, y))
-        return self.G
+                    G.add_edge(x, y, weight=ThomasFermi.calc_weight(physics, num_isls, p_WKB, x, y))
+        return G
+    
 
-    def _calc_stable_dist(self) -> NDArray[np.float64]:
-        """
+    @staticmethod
+    def calc_stable_dist(G:networkx.DiGraph, integer_charges:NDArray[np.int_]) -> NDArray[np.float64]:
+        '''
         Calculates the steady-state of the Markov graph.
 
+        Parameters
+        ----------
+        G : networkx.DiGraph
+            A graph with tuple[int, ...] nodes representing possible
+            charge configurations. This graph is a Markov graph where edges
+            represent the transition rates between possible configurations.
+        integer_charges : ndarray[int]
+            The charge configuration array which minimizes the capacitance energy.
+            A 1d array with length equal to the number of islands specifying the
+            integer number of charges on each island.
+       
         Returns
         -------
         ndarray[float]
-            An array with length equal to len(G) representing the steady-state
+            An array with length equal to ``len(G)`` representing the steady-state
             of the Markov graph.
-        """
+        '''
+        start_node = tuple(integer_charges)
         # Adjacency matrix, caution not the Markov matrix
-        a_mat = networkx.to_numpy_array(self.G)
+        a_mat = networkx.to_numpy_array(G)
 
         M = a_mat.T - np.diag(np.sum(a_mat, axis=1))
 
@@ -1921,145 +2049,167 @@ class ThomasFermi:
 
         # fix if one node is disconnected from graph
         for i in range(len(a_mat)):
-            if np.sum(a_mat[i,:]) == 0 and np.sum(a_mat[:,i]) == 0 and (list(self.G.nodes)[i] != self.start_node):
+            if np.sum(a_mat[i,:]) == 0 and np.sum(a_mat[:,i]) == 0 and (list(G.nodes)[i] != start_node):
                 M_solver[i,i] = 1
                 M_solver[-1,i] = 0
 
-        self.dist = np.linalg.solve(M_solver, b)
+        dist = np.linalg.solve(M_solver, b)
+        return dist
 
 
-        return self.dist
-
-    def _calc_graph_charge(self):
-        """
-        Calculates the average charge configuration of the steady-state of the
+    @staticmethod
+    def calc_graph_charge(G:networkx.DiGraph, dist:NDArray[np.float64]) -> tuple[int, ...]:
+        '''
+        Calculates the modal charge configuration of the steady-state of the
         Markov graph.
-        Sets ``self.graph_charge`` equal to the result.
-        """
-        if len(self.islands) == 0:
-            graph_charge = ()
-        else: 
-            max_index = np.argmax(self.dist)
-            graph_charge = list(self.G.nodes())[max_index]
-        self.graph_charge = graph_charge
-        return self.graph_charge
+        
+        Parameters
+        ----------
+        G : networkx.DiGraph
+            A graph with tuple[int, ...] nodes representing possible
+            charge configurations. This graph is a Markov graph where edges
+            represent the transition rates between possible configurations.
+        dist : ndarray[float]
+            An array with length equal to ``len(G)`` representing the steady-state
+            of the Markov graph.
 
-    def _calc_graph_current(self) -> float:
-        """
+        Returns
+        -------
+        tuple[int, ...]
+            The node of ``G`` which has the greatest weight in the steady-state of
+            the Markov graph.
+        '''
+        max_index = np.argmax(dist)
+        graph_charge = list(G.nodes())[max_index]
+        return graph_charge
+
+
+    @staticmethod
+    def calc_current(physics:PhysicsParameters, G:networkx.DiGraph,
+                     dist:NDArray[np.float64], energy_matrix:NDArray[np.float64],
+                     charges:NDArray[np.float64], p_WKB:NDArray[np.float64],
+                     is_short_circuit:bool) -> float:
+        '''
         Calculates the current running through the wire, from the Markov graph.
-        Sets ``self.current`` equal to the result.
+        
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        G : networkx.DiGraph
+            A graph with tuple[int, ...] nodes representing possible
+            charge configurations. This graph is a Markov graph where edges
+            represent the transition rates between possible configurations.
+        dist : ndarray[float]
+            An array with length equal to ``len(G)`` representing the steady-state
+            of the Markov graph.
+        energy_matrix : ndarray[float]
+            A 2D array with shape ``(len(charges), len(charges))`` giving the energy
+            matrix (in meV) in the capacitance model.
+        charges : ndarray[float]
+            An array with length equal to the number of
+            islands, where each entry of the array is the total induced
+            prticle number on the corresponding island.
+        p_WKB : ndarray[float]
+            An array with length equal to the number of barriers, where each
+            entry is the transition rate across the corresponding barrier.
+        is_short_circuit : bool
+            ``True`` if ``n`` is above the cutoff threshold everywhere along
+            the x-axis, ``False`` otherwise.
 
         Returns
         -------
         float
-            ``self.current``, the current running through the wire,
+            The current running through the wire,
             defined to be the sum over all tunneling events of:
             (rate at which the tunneling event occurs) *
             (``dist`` probability of initial node of tunneling event) *
             (change in number of particles in the Left sink).
             A positive value indicates particles traveling from left to right.
-        """
-        mu_L = self.physics.V_L * self.physics.q
+        '''
+        mu_L = physics.V_L * physics.q
         current = 0.0
-        if len(self.islands) == 0:
-            current = (self.physics.short_circuit_current if self.is_short_circuit \
-                       else self.physics.barrier_current) 
-        elif len(self.islands) == 1:
-            for u in list(self.G.nodes()):
+        if len(charges) == 0:
+            current = (physics.short_circuit_current if is_short_circuit \
+                       else physics.barrier_current) 
+        elif len(charges) == 1:
+            for u in list(G.nodes()):
                 plus = tuple(np.array(u) + 1)
                 minus = tuple(np.array(u) - 1)
-                index_u = list(self.G.nodes()).index(u)
-                E_u = self._calc_cap_energy(np.array(u))
-                if plus in self.G:
-                    E_plus = self._calc_cap_energy(np.array(plus))
-                    gamma_plus = self.p_WKB[0] * self._fermi(E_plus - E_u - mu_L)
-                    current += self.dist[index_u] * gamma_plus
-                if minus in self.G:
-                    E_minus = self._calc_cap_energy(np.array(minus))
-                    gamma_minus = self.p_WKB[0] * self._fermi(E_minus + mu_L - E_u)
-                    current -= self.dist[index_u] * gamma_minus
+                index_u = list(G.nodes()).index(u)
+                E_u = ThomasFermi.calc_cap_energy(np.array(u), energy_matrix, charges)
+                if plus in G:
+                    E_plus = ThomasFermi.calc_cap_energy(np.array(plus), energy_matrix, charges)
+                    gamma_plus = p_WKB[0] * ThomasFermi.fermi(physics, E_plus - E_u - mu_L)
+                    current += dist[index_u] * gamma_plus
+                if minus in G:
+                    E_minus = ThomasFermi.calc_cap_energy(np.array(minus), energy_matrix, charges)
+                    gamma_minus = p_WKB[0] * ThomasFermi.fermi(physics, E_minus + mu_L - E_u)
+                    current -= dist[index_u] * gamma_minus
         else:  # len(self.islands) >= 2
-            for u in list(self.G.nodes()):
+            for u in list(G.nodes()):
                 plus = tuple(
                     np.array(u) + np.pad(np.array([1]), (0, len(u) - 1), "constant")
                 )
                 minus = tuple(
                     np.array(u) - np.pad(np.array([1]), (0, len(u) - 1), "constant")
                 )
-                index_u = list(self.G.nodes()).index(u)
-                if plus in self.G:
-                    gamma_plus = self.G[u][plus]["weight"]
-                    current += self.dist[index_u] * gamma_plus
-                if minus in self.G:
-                    gamma_minus = self.G[u][minus]["weight"]
-                    current -= self.dist[index_u] * gamma_minus
-        self.current = current
-        return self.current
+                index_u = list(G.nodes()).index(u)
+                if plus in G:
+                    gamma_plus = G[u][plus]["weight"]
+                    current += dist[index_u] * gamma_plus
+                if minus in G:
+                    gamma_minus = G[u][minus]["weight"]
+                    current -= dist[index_u] * gamma_minus
+        return current
 
-    def _calc_current(self):
-        """
-        Calculates the current running through the wire.
-        Sets ``self.current`` equal to the result.
-        This function takes care of a few edge cases, and otherwise calls
-        ``self.calc_graph_current()``
 
-        Returns
-        -------
-        float
-            ``self.current``, the current running through the wire,
-            defined to be the sum over all tunneling events of:
-            (rate at which the tunneling event occurs) *
-            (``dist`` probability of initial node of tunneling event) *
-            (change in number of particles in the Left sink).
-            A positive value indicates particles traveling from left to right.
-        """
-        if self.is_short_circuit:
-            current = self.physics.short_circuit_current
-        elif len(self.islands) == 0:
-            current = self.physics.barrier_current
-        else:
-            self._create_graph()
-            self._calc_stable_dist()
-            current = self._calc_graph_current()
-        self.current = current
-        return self.current
-
-    def _count_transitions(self) -> int:
-        """
+    @staticmethod
+    def count_transitions(numerics:NumericsParameters, G:networkx.DiGraph,
+                          stable_node:tuple[int, ...]) -> int:
+        '''
         Calculates the number of transitions, defined to be the number of
-        graph nodes adjacent to ``self.start_node`` such that
+        graph nodes adjacent to `stable_node` such that
         the incoming and outgoing weights between the nodes and
-        ``self.start_node`` are (close to) equal.
+        `stable_node` are (close to) equal.
 
-        Sets ``self.trans_count`` equal to the result.
+        Parameters
+        ----------
+        numerics : NumericsParameters
+            ``NumericsParameters`` dataclass with names and values for
+            options for numeric calculations.
+        G : networkx.DiGraph
+            A graph with tuple[int, ...] nodes representing possible
+            charge configurations. This graph is a Markov graph where edges
+            represent the transition rates between possible configurations.
+        stable_node : tuple[int, ...]
+            The node of ``G`` which has the greatest weight in the
+            steady-state of the Markov graph.
 
         Returns
         -------
         int
-            ``self.trans_count``, the number of graph nodes adjacent to
-            ``self.start_node`` such that the incoming and outgoing weights between
-            the nodes and ``self.start_node`` are (close to) equal.
-        """        
-        eps = self.numerics.count_transitions_eps
+            The number of graph nodes adjacent to `stable_node` such that the
+            incoming and outgoing weights between the nodes and `stable_node`
+            are (close to) equal.
+        '''        
+        eps = numerics.count_transitions_eps
 
         # Minimum weight to accept as a transition
-        sigma = self.numerics.count_transitions_sigma
+        sigma = numerics.count_transitions_sigma
 
         # Only calculate transitions if we know there are islands
-        if len(self.islands) == 0:
-            self.trans_count = 0
-            return self.trans_count
+        if len(stable_node) == 0:
+            return 0
         else:
             trans_count = 0
-            # Call most probable node the charge config (as in calc_graph_charge())
-            stable_node = list(self.G.nodes)[np.argmax(self.dist)]
 
             # Loop through all neighbors of stable node
-            for nbr in self.G[stable_node]:
+            for nbr in G[stable_node]:
                 # If the weights of in/out edges are similar, then
-                #    call it a transition
-                w_in = self.G[nbr][stable_node]["weight"]
-                w_out = self.G[stable_node][nbr]["weight"]
+                # call it a transition
+                w_in = G[nbr][stable_node]["weight"]
+                w_out = G[stable_node][nbr]["weight"]
 
                 # Calculate difference relative to weight size
                 if (
@@ -2067,77 +2217,71 @@ class ThomasFermi:
                     and abs(w_in - w_out) / (0.5 * (w_in + w_out)) < eps
                 ):
                     trans_count += 1
-            self.trans_count = trans_count
-            return self.trans_count
+            return trans_count
 
-    def _sensor_from_island_charges(
-        self, island_charges: NDArray[np.float64]
-    ) -> NDArray[np.float64]:
-        """
+
+    @staticmethod
+    def sensor_from_integer_charges(physics:PhysicsParameters,
+                integer_charges: NDArray[np.float64], n:NDArray[np.float64],
+                islands:NDArray[np.int_]) -> NDArray[np.float64]:
+        '''
         Calculates the output of the charge sensors if the system were to be
         prepared to a given charge state.
 
         Parameters
         ----------
-        island_charges : ndarray[float]
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        integer_charges : ndarray[float]
             An array indicating the number of charges on each island.
+        n : ndarray[float]
+            1D array containing the particle density (in 1/nm) at each of
+            the x-values in ``physics.x``.
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
 
         Returns
         -------
         ndarray[float]
             An array indicating the potential readout for each sensor in ``physics.sensors``.
-        """
+        '''
 
         def calc_single_sensor(pos):
             (sx, sy, sz) = pos
             ss = np.sqrt(sy**2 + sz**2)
-            sensor_scale = np.exp(-ss / self.physics.screening_length) / ss
+            sensor_scale = np.exp(-ss / physics.screening_length) / ss
             output = 0
             # calculate field at sensor due to charge islands
-            for i in range(len(self.islands)):
-                n_i = self.n[self.islands[i, 0] : self.islands[i, 1]]
+            for i in range(len(islands)):
+                n_i = n[islands[i,0]:islands[i,1]]
                 n_sum = np.sum(n_i)
-                x_i = self.physics.x[self.islands[i, 0] : self.islands[i, 1]]
+                x_i = physics.x[islands[i,0]:islands[i,1]]
                 r = np.sqrt((sx - x_i) ** 2 + sy**2 + sz**2)
                 output += (
-                    (self.physics.q * island_charges[i]) / sensor_scale
-                    * np.sum(n_i * np.exp(-r / self.physics.screening_length) / r) / n_sum
+                    (physics.q * integer_charges[i]) / sensor_scale
+                    * np.sum(n_i * np.exp(-r / physics.screening_length) / r) / n_sum
                 )
             return output
 
-        sensor_output = np.zeros(len(self.physics.sensors), dtype=np.float64)
-        for i, pos in enumerate(self.physics.sensors):
+        sensor_output = np.zeros(len(physics.sensors), dtype=np.float64)
+        for i, pos in enumerate(physics.sensors):
             sensor_output[i] = calc_single_sensor(pos)
         return sensor_output
 
-    def _calc_sensor(self) -> NDArray[np.float64]:
-        """
-        Calculates the output of the charge sensors by summing the Coulomb
-        potential contributions from the charge islands, evaluated at
-        each sensor location.
 
-        Sets ``self.sensor_output`` equal to the result.
-
-        Returns
-        -------
-        ndarray[float]
-            ``self.sensor_output``, an array indicating the Coulomb potential
-            readout for each sensor in ``physics.sensors``.
-        """
-        self.sensor_output = self._sensor_from_island_charges(
-            np.array(self.island_charges, dtype=np.float64)
-        )
-        return self.sensor_output
-
-    def _calc_dot_states(
-        self,
-    ) -> tuple[NDArray[np.bool_], NDArray[np.bool_], NDArray[np.int_]]:
-        """
+    @staticmethod
+    def calc_dot_states(physics:PhysicsParameters, islands:NDArray[np.int_],
+                        integer_charges:NDArray[np.int_], charge_centers:NDArray[np.float64]
+                       ) -> tuple[NDArray[np.bool_], NDArray[np.bool_], NDArray[np.int_]]:
+        '''
         Calculates whether each quantum dot in the system is occupied or combined,
-        and matches the charges from ``self.island_charges`` to their respective dots.
+        and matches the charges from `integer_charges` to their respective dots.
 
         This function relies on the expected regions where dots can be formed to
-        be defined via ``self.physics.dot_regions``. (If regions are not defined,
+        be defined via ``physics.dot_regions``. (If regions are not defined,
         defaults will be generated assuming an alternating pattern of barrier
         and plunger gates).
 
@@ -2160,6 +2304,23 @@ class ThomasFermi:
         it overlaps the region by a greater area than any other island, or unless
         it is left with no other region to be associated with.
 
+        Parameters
+        ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
+        integer_charges : ndarray[int]
+            The charge configuration array which minimizes the capacitance energy.
+            A 1d array with length equal to the number of islands specifying the
+            integer number of charges on each island.
+        charge_centers : ndarray[float]
+            An array with length equal to ``len[islands]`` giving the center of
+            the charge distribution over each island.
+
         Returns
         -------
         are_dots_occupied : ndarray[bool]
@@ -2178,13 +2339,13 @@ class ThomasFermi:
             of charges in each dot. In the case of combined dots, the
             total number of charges will be entered in the left-most dot,
             with the other dots padded with zeros.
-        """
-        x = self.physics.x
-        if self.physics.dot_regions is not None:
-            dot_regions = self.physics.dot_regions
+        '''
+        x = physics.x
+        if physics.dot_regions is not None:
+            dot_regions = physics.dot_regions
             n_dots = len(dot_regions)
         else:
-            g_means = [g.mean for g in self.physics.gates]
+            g_means = [g.mean for g in physics.gates]
             n_dots = (len(g_means) - 1) // 2
             # Regions are defined as running from:
             # (the midpoint between the plunger gate and the barrier gate to the left)
@@ -2202,10 +2363,10 @@ class ThomasFermi:
         dot_charges = np.zeros(n_dots, dtype=np.int_)
 
         # only consider occupied islands
-        full_isl_ind = np.nonzero(self.island_charges)[0]
-        full_islands = np.take(self.islands, full_isl_ind, axis=0)
-        full_charge = np.take(self.island_charges, full_isl_ind)
-        full_center = np.take(self.charge_centers, full_isl_ind)
+        full_isl_ind = np.nonzero(integer_charges)[0]
+        full_islands = np.take(islands, full_isl_ind, axis=0)
+        full_charge = np.take(integer_charges, full_isl_ind)
+        full_center = np.take(charge_centers, full_isl_ind)
         n_full_isl = len(full_isl_ind)
 
         # check which islands overlap which dots
@@ -2273,24 +2434,34 @@ class ThomasFermi:
                 combined_isl = matches
         dot_charges[combined_dot] = np.sum(np.take(full_charge, combined_isl))
 
-        self.are_dots_occupied = are_dots_occupied
-        self.are_dots_combined = are_dots_combined
-        self.dot_charges = dot_charges
-        return self.are_dots_occupied, self.are_dots_combined, self.dot_charges
+        return are_dots_occupied, are_dots_combined, dot_charges
 
-    def _island_charges_from_charge_state(
-        self, dot_charges: NDArray[np.int_], are_dots_combined: NDArray[np.bool_]
-    ) -> NDArray[np.int_]:
-        """
+
+    @staticmethod
+    def integer_charges_from_charge_state(physics:PhysicsParameters,
+            n:NDArray[np.float64], islands:NDArray[np.int_],
+            dot_charges:NDArray[np.int_], are_dots_combined:NDArray[np.bool_]
+            ) -> NDArray[np.int_]:
+        '''
         Calculates how many charges would be on each island if the system were
         prepared to a particular charge state.
 
-        In particular, this function attempts to match ``dot_charges`` (which
+        In particular, this function attempts to match `dot_charges` (which
         records the charges as a function of which dot they are a part of) with
-        ``self.islands``.
+        `islands`.
 
         Parameters
         ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        n : ndarray[float]
+            1D array containing the particle density (in 1/nm) at each of
+            the x-values in ``physics.x``.
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
         dot_charges : ndarray[int]
             An array of integers, one for each dot, indicating the total number
             of charges in each dot. In the case of combined dots, the
@@ -2304,19 +2475,18 @@ class ThomasFermi:
 
         Returns
         -------
-        island_charges : ndarray[int]
+        integer_charges : ndarray[int]
             An array of integers, one for each island, indicating the total number
             of charges in each island.
-        """
-        x = self.physics.x
-        islands = self.islands
+        '''
+        x = physics.x
         n_isl = len(islands)
 
-        if self.physics.dot_regions is not None:
-            dot_regions = self.physics.dot_regions
+        if physics.dot_regions is not None:
+            dot_regions = physics.dot_regions
             n_dots = len(dot_regions)
         else:
-            g_means = [g.mean for g in self.physics.gates]
+            g_means = [g.mean for g in physics.gates]
             n_dots = (len(g_means) - 1) // 2
             # Regions are defined as running from:
             # (the midpoint between the plunger gate and the barrier gate to the left)
@@ -2329,9 +2499,9 @@ class ThomasFermi:
                     (g_means[2 * i + 1] + g_means[2 * i + 2]) / 2,
                 ]
 
-        island_charges = np.zeros(len(self.islands), dtype=np.int_)
+        integer_charges = np.zeros(n_isl, dtype=np.int_)
         if n_isl == 0:
-            return island_charges
+            return integer_charges
 
         # group combined dots together
         combined_dot_regions = []
@@ -2388,12 +2558,12 @@ class ThomasFermi:
             overlaps = np.nonzero(is_overlap[d])[0]
             if len(overlaps) == 0:
                 isl_match = np.argmin(np.abs(c_dot_mid[d] - isl_mid))
-                island_charges[isl_match] += c_dot_charges[d]
+                integer_charges[isl_match] += c_dot_charges[d]
             elif len(overlaps) == 1:
-                island_charges[overlaps[0]] += c_dot_charges[d]
+                integer_charges[overlaps[0]] += c_dot_charges[d]
             else:
                 overlap_weight = np.array([
-                    np.sum(self.n[
+                    np.sum(n[
                         max(islands[i, 0], c_dot_regions_idx[d, 0]) : \
                         min(islands[i, 1], c_dot_regions_idx[d, 1])
                     ]) for i in overlaps
@@ -2416,22 +2586,31 @@ class ThomasFermi:
                             overlap_charges[a] -= 1
                             over -= 1
                 for i in range(len(overlaps)):
-                    island_charges[overlaps[i]] += overlap_charges[i]
+                    integer_charges[overlaps[i]] += overlap_charges[i]
 
-        return island_charges
+        return integer_charges
 
-    def sensor_from_charge_state(
-        self, dot_charges: NDArray[np.int_], are_dots_combined: NDArray[np.bool_]
-    ) -> NDArray[np.float64]:
-        """
+
+    @staticmethod
+    def sensor_from_charge_state(physics:PhysicsParameters, n:NDArray[np.float64],
+                islands:NDArray[np.int_], dot_charges: NDArray[np.int_],
+                are_dots_combined: NDArray[np.bool_]) -> NDArray[np.float64]:
+        '''
         Calculates what the sensor output would be if the system were prepared
         to a particular charge state.
 
-        ``run_calculations()`` must be run on this ``ThomasFermi`` instance
-        before using this function.
-
         Parameters
         ----------
+        physics : PhysicsParameters
+            ``PhysicsParameters`` dataclass with the physical device parameters.
+        n : ndarray[float]
+            1D array containing the particle density (in 1/nm) at each of
+            the x-values in ``physics.x``.
+        islands : ndarray[int]
+            An array with shape ``(num_islands, 2)`` giving the islands,
+            where the ``i``-th island ``islands[i]`` is
+            a length-2 integer array ``[begin_index, end_index + 1]``
+            giving the indeces of ``physics.x`` corresponding to the island.
         dot_charges : ndarray[int]
             An array of integers, one for each dot, indicating the total number
             of charges in each dot. In the case of combined dots, the
@@ -2448,37 +2627,39 @@ class ThomasFermi:
         sensor : ndarray[float]
             An array of floats, one for each sensor, indicating the voltage
             at each sensor.
-        """
-        return self._sensor_from_island_charges(
-            np.array(
-                self._island_charges_from_charge_state(dot_charges, are_dots_combined),
-                dtype=np.float64,
-            )
+        '''
+        return ThomasFermi.sensor_from_integer_charges(
+            physics,
+            np.array(ThomasFermi.integer_charges_from_charge_state(physics, n, islands,
+                            dot_charges, are_dots_combined), dtype=np.float64),
+            n,
+            islands
         )
+
 
     def run_calculations(
         self,
         *,
-        inc_inv_cap_matrix: bool = False,
+        inc_energy_matrix: bool = False,
         inc_curr: bool = False,
         inc_trans: bool = False,
-        n_guess: NDArray[np.float64] | None = None,
+        n_guess: NDArray[np.float64]|None = None,
     ) -> ThomasFermiOutput:
-        """
+        '''
         Run the simulation, and return a dict with the relevant results.
 
         Parameters
         ----------
-        inc_inv_cap_matrix : bool, optional
+        inc_energy_matrix : bool
             Whether to include the capacitance model and WKB probabilities in
             the output
-        inc_curr : bool, optional
+        inc_curr : bool
             Whether to perform current calculations and include the results in
             the output
-        inc_trans : bool, optional
+        inc_trans : bool
             Whether to perform current calculations and include the transition
             count in the output
-        n_guess : ndarray[float], optional
+        n_guess : ndarray[float] | None
             Initial guess (in 1/nm) for the particle density n(x).
             If ``None``, an array of zeros will be used.
 
@@ -2486,43 +2667,79 @@ class ThomasFermi:
         -------
         output : ThomasFermiOutput
             A ``ThomasFermiOutput`` object with the relevant results of the calculation.
-        """
+        '''
         output = ThomasFermiOutput()
 
-        self._calc_n(n_guess=n_guess)
-        self._calc_qV_TF()
-        self._calc_islands_and_barriers()
-        self._calc_WKB_prob()
-        self._calc_charges()
-        self._calc_charge_centers()
-        self._calc_inv_cap_matrix()
-        self._calc_stable_config()
-        self._calc_dot_states()
-        self._calc_sensor()
+        self.effective_peaks = (
+            calc_effective_peaks(self.physics.gates)
+            if self.physics.effective_peaks is None
+            else self.physics.effective_peaks
+        )
+        self.V = (
+            calc_V(self.physics.gates, self.physics.x, 0, 0, self.effective_peaks)
+            if self.physics.V is None
+            else self.physics.V
+        )
+        self.K_mat = (
+            calc_K_mat(self.physics.x, self.physics.K_0, self.physics.sigma)
+            if self.physics.K_mat is None
+            else self.physics.K_mat
+        )
+        self.g0_dx_K_plus_1_inv = np.array([])
+        if self.numerics.calc_n_use_combination_method:
+            delta_x = (self.physics.x[-1] - self.physics.x[0]) / (len(self.physics.x) - 1)
+            self.g0_dx_K_plus_1_inv = (
+                np.linalg.inv(
+                    self.physics.g_0 * delta_x * self.K_mat
+                    + np.identity(len(self.K_mat))
+                )
+                if self.physics.g0_dx_K_plus_1_inv is None
+                else self.physics.g0_dx_K_plus_1_inv
+            )
 
-        output.island_charges = np.array(self.island_charges)
+        self.n, self.phi, self.converged = ThomasFermi.calc_n(self.physics, self.numerics,
+                    self.V, self.K_mat, self.g0_dx_K_plus_1_inv, n_guess=n_guess)
+        self.qV_TF = ThomasFermi.calc_qV_TF(self.physics, self.V, self.K_mat, self.n)
+        self.islands, self.barriers, self.all_islands, self.is_short_circuit = \
+                    ThomasFermi.calc_islands_and_barriers(self.physics, self.numerics, self.n)
+        self.charges = ThomasFermi.calc_charges(self.physics, self.n, self.islands)
+        self.charge_centers = ThomasFermi.calc_charge_centers(self.physics, self.n, self.islands)
+        self.energy_matrix = ThomasFermi.calc_energy_matrix(self.physics, self.numerics,
+                    self.K_mat, self.n, self.islands, self.charges)
+        self.integer_charges = ThomasFermi.calc_integer_charges(self.numerics, self.charges)
+        self.are_dots_occupied, self.are_dots_combined, self.dot_charges = \
+                    ThomasFermi.calc_dot_states(self.physics, self.islands,
+                    self.integer_charges, self.charge_centers)
+        self.sensor_output = ThomasFermi.sensor_from_charge_state(self.physics, self.n,
+                    self.islands, self.dot_charges, self.are_dots_combined)
+
+        output.island_charges = np.array(self.integer_charges)
         output.sensor = np.array(self.sensor_output)
         output.are_dots_occupied = self.are_dots_occupied
         output.are_dots_combined = self.are_dots_combined
         output.dot_charges = self.dot_charges
         output.converged = self.converged
-
-        if inc_curr:
-            self._calc_current()
-            self._calc_graph_charge()
-            output.current = self.current
-
         output.n = np.array(self.n)
 
-        if not inc_curr and inc_trans:
-            self._create_graph()
-            self._calc_stable_dist()
+        if inc_curr or inc_trans:
+            self.p_WKB, self.tranmission_coef = ThomasFermi.calc_WKB_prob(self.physics,
+                            self.qV_TF, self.islands, self.barriers, self.is_short_circuit)
+            self.G = ThomasFermi.create_graph(self.physics, self.numerics,
+                            self.integer_charges, self.p_WKB)
+            self.dist = ThomasFermi.calc_stable_dist(self.G, self.integer_charges)
+            self.graph_charge = ThomasFermi.calc_graph_charge(self.G, self.dist)
+
+        if inc_curr:
+            self.current = ThomasFermi.calc_current(self.physics, self.G, self.dist,
+                            self.energy_matrix, self.charges, self.p_WKB, self.is_short_circuit)
+            output.current = self.current
+            
         if inc_trans:
-            self._count_transitions()
+            self.trans_count = ThomasFermi.count_transitions(self.numerics, self.G, self.graph_charge)
             output.transition_count = self.trans_count
 
-        if inc_inv_cap_matrix:
-            output.inv_cap_matrix = np.array(self.inv_cap_matrix)
+        if inc_energy_matrix:
+            output.energy_matrix = np.array(self.energy_matrix)
         
         return output
 
@@ -2533,7 +2750,7 @@ def is_transition(
     dot_charges_2: NDArray[np.int_],
     are_dots_combined_2: NDArray[np.bool_],
 ) -> tuple[NDArray[np.bool_], NDArray[np.bool_]]:
-    """
+    '''
     Determines whether a transition occurs between two points based off their
     charge states.
 
@@ -2561,7 +2778,7 @@ def is_transition(
     is_transition_combined : ndarray[bool]
         An array with length ``n_dots-1`` indicating whether there is a
         transition in a combined dot on either side of a particular barrier.
-    """
+    '''
     n_dots = len(dot_charges_1)
     is_trans = np.full(n_dots, False, dtype=np.bool_)
     is_trans_combined = np.full(n_dots - 1, False, dtype=np.bool_)
