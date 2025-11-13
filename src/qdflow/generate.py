@@ -792,7 +792,8 @@ def calc_csd(n_dots:int, physics:simulation.PhysicsParameters,
                     ex_are_dot_combined = are_dot_combined
                 dot_charge = tf_out.dot_charges
                 are_dot_combined = tf_out.are_dots_combined    
-                csd_out.excited_sensor[i,j,:] = tf.sensor_from_charge_state(ex_dot_charge, ex_are_dot_combined)
+                csd_out.excited_sensor[i,j,:] = simulation.ThomasFermi.sensor_from_charge_state(
+                            phys, tf.n, tf.islands, ex_dot_charge, ex_are_dot_combined)
             if include_current and csd_out.current is not None:
                 csd_out.current[i,j] = tf_out.current
 
@@ -1182,7 +1183,8 @@ def calc_rays(physics:simulation.PhysicsParameters, centers:NDArray[np.float64],
                             ex_are_dot_combined = are_dot_combined
                         dot_charge = tf_out.dot_charges
                         are_dot_combined = tf_out.are_dots_combined    
-                        rays_out.excited_sensor[c_i,r_i,i,:] = tf.sensor_from_charge_state(ex_dot_charge, ex_are_dot_combined)
+                        rays_out.excited_sensor[c_i,r_i,i,:] = simulation.ThomasFermi.sensor_from_charge_state(
+                                    phys, tf.n, tf.islands, ex_dot_charge, ex_are_dot_combined)
                     if include_current and rays_out.current is not None:
                         rays_out.current[c_i,r_i,i] = tf_out.current
                         

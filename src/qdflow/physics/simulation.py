@@ -1773,7 +1773,8 @@ class ThomasFermi:
 
 
     @staticmethod
-    def calc_integer_charges(numerics:NumericsParameters, charges:NDArray[np.float64]) -> NDArray[np.int_]:
+    def calc_integer_charges(numerics:NumericsParameters, energy_matrix:NDArray[np.floating[Any]],
+                             charges:NDArray[np.floating[Any]]) -> NDArray[np.int_]:
         '''
         Calculates stable integer charge configuration.
          
@@ -1785,6 +1786,9 @@ class ThomasFermi:
         numerics : NumericsParameters
             ``NumericsParameters`` dataclass with names and values for
             options for numeric calculations.
+        energy_matrix : ndarray[float]
+            A 2D array with shape ``(len(charges), len(charges))`` giving the energy
+            matrix (in meV) in the capacitance model.
         charges : ndarray[float]
             An array with length equal to the number of
             islands, where each entry of the array is the total induced
@@ -1805,11 +1809,10 @@ class ThomasFermi:
         dN_list = [range(max(0, x - N_limit + 1), x + N_limit + 1, 1) for x in N_int]
         N_list = list(itertools.product(*dN_list))
 
-        energy_table = [ThomasFermi.calc_cap_energy(np.array(x)) for x in N_list]
+        energy_table = [ThomasFermi.calc_cap_energy(np.array(x), energy_matrix, charges) for x in N_list]
         min_energy = min(energy_table)
-        integer_charges = N_list[energy_table.index(min_energy)]
-        integer_charges = np.array(integer_charges, dtype=int)
-
+        integer_charges = np.array(N_list[energy_table.index(min_energy)], dtype=int)
+        
         return integer_charges
 
 
@@ -1838,7 +1841,8 @@ class ThomasFermi:
 
 
     @staticmethod
-    def calc_weight(physics:PhysicsParameters, num_islands:int, p_WKB:NDArray[np.float64],
+    def calc_weight(physics:PhysicsParameters, num_islands:int, p_WKB:NDArray[np.floating[Any]],
+                    energy_matrix:NDArray[np.floating[Any]], charges:NDArray[np.floating[Any]],
                     u:NDArray[np.int_], v:NDArray[np.int_]) -> float:
         '''
         Calculates the transition rate from one configuration to another.
@@ -1852,6 +1856,13 @@ class ThomasFermi:
         p_WKB : ndarray[float]
             An array with length equal to the number of barriers, where each
             entry is the transition rate across the corresponding barrier.
+        energy_matrix : ndarray[float]
+            A 2D array with shape ``(len(charges), len(charges))`` giving the energy
+            matrix (in meV) in the capacitance model.
+        charges : ndarray[float]
+            An array with length equal to the number of
+            islands, where each entry of the array is the total induced
+            prticle number on the corresponding island.
         u, v : ndarray[int]
             The initial and final charge configuration arrays. These are 1d
             arrays with length equal to the number of islands specifying the
@@ -1885,8 +1896,8 @@ class ThomasFermi:
         if diff[idx] != 1 and diff[idx] != -1:
             return 0.0
 
-        E_u = ThomasFermi.calc_cap_energy(np.array(u))
-        E_v = ThomasFermi.calc_cap_energy(np.array(v))
+        E_u = ThomasFermi.calc_cap_energy(np.array(u), energy_matrix, charges)
+        E_v = ThomasFermi.calc_cap_energy(np.array(v), energy_matrix, charges)
 
         mu_L = physics.V_L * physics.q
         mu_R = physics.V_R * physics.q
@@ -1923,7 +1934,8 @@ class ThomasFermi:
 
     @staticmethod
     def create_graph(physics:PhysicsParameters, numerics:NumericsParameters,
-                     integer_charges:NDArray[np.int_], p_WKB:NDArray[np.float64]) -> networkx.DiGraph:
+                     energy_matrix:NDArray[np.floating[Any]], charges:NDArray[np.floating[Any]],
+                     integer_charges:NDArray[np.int_], p_WKB:NDArray[np.floating[Any]]) -> networkx.DiGraph:
         '''
         Creates the Markov graph of charge configurations.
 
@@ -1940,6 +1952,13 @@ class ThomasFermi:
         numerics : NumericsParameters
             ``NumericsParameters`` dataclass with names and values for
             options for numeric calculations.
+        energy_matrix : ndarray[float]
+            A 2D array with shape ``(len(charges), len(charges))`` giving the energy
+            matrix (in meV) in the capacitance model.
+        charges : ndarray[float]
+            An array with length equal to the number of
+            islands, where each entry of the array is the total induced
+            prticle number on the corresponding island.
         integer_charges : ndarray[int]
             The charge configuration array which minimizes the capacitance energy.
             A 1d array with length equal to the number of islands specifying the
@@ -2011,7 +2030,8 @@ class ThomasFermi:
         for x in list(G.nodes()):
             for y in list(G.nodes()):
                 if x != y:
-                    G.add_edge(x, y, weight=ThomasFermi.calc_weight(physics, num_isls, p_WKB, x, y))
+                    G.add_edge(x, y, weight=ThomasFermi.calc_weight(physics,
+                            num_isls, p_WKB, energy_matrix, charges, x, y))
         return G
     
 
@@ -2706,7 +2726,7 @@ class ThomasFermi:
         self.charge_centers = ThomasFermi.calc_charge_centers(self.physics, self.n, self.islands)
         self.energy_matrix = ThomasFermi.calc_energy_matrix(self.physics, self.numerics,
                     self.K_mat, self.n, self.islands, self.charges)
-        self.integer_charges = ThomasFermi.calc_integer_charges(self.numerics, self.charges)
+        self.integer_charges = ThomasFermi.calc_integer_charges(self.numerics, self.energy_matrix, self.charges)
         self.are_dots_occupied, self.are_dots_combined, self.dot_charges = \
                     ThomasFermi.calc_dot_states(self.physics, self.islands,
                     self.integer_charges, self.charge_centers)
@@ -2724,8 +2744,8 @@ class ThomasFermi:
         if inc_curr or inc_trans:
             self.p_WKB, self.tranmission_coef = ThomasFermi.calc_WKB_prob(self.physics,
                             self.qV_TF, self.islands, self.barriers, self.is_short_circuit)
-            self.G = ThomasFermi.create_graph(self.physics, self.numerics,
-                            self.integer_charges, self.p_WKB)
+            self.G = ThomasFermi.create_graph(self.physics, self.numerics, self.energy_matrix,
+                            self.charges, self.integer_charges, self.p_WKB)
             self.dist = ThomasFermi.calc_stable_dist(self.G, self.integer_charges)
             self.graph_charge = ThomasFermi.calc_graph_charge(self.G, self.dist)
 
