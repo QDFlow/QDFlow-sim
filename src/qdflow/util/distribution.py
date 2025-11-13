@@ -444,10 +444,10 @@ class Normal(Distribution[float]):
     @overload
     def draw(
         self, rng: np.random.Generator, size: int | tuple[int, ...]
-    ) -> NDArray[np.float64]: ...
+    ) -> NDArray[np.floating[Any]]: ...
     def draw(
         self, rng: np.random.Generator, size: int | tuple[int, ...] | None = None
-    ) -> float | NDArray[np.float64]:
+    ) -> float | NDArray[np.floating[Any]]:
         return rng.normal(self._mean, self._stdev, size=size)
 
     def __repr__(self) -> str:
@@ -475,10 +475,10 @@ class Uniform(Distribution[float]):
     @overload
     def draw(
         self, rng: np.random.Generator, size: int | tuple[int, ...]
-    ) -> NDArray[np.float64]: ...
+    ) -> NDArray[np.floating[Any]]: ...
     def draw(
         self, rng: np.random.Generator, size: int | tuple[int, ...] | None = None
-    ) -> float | NDArray[np.float64]:
+    ) -> float | NDArray[np.floating[Any]]:
         return rng.uniform(self._min, self._max, size=size)
 
     def __repr__(self) -> str:
@@ -509,10 +509,10 @@ class LogNormal(Distribution[float]):
     @overload
     def draw(
         self, rng: np.random.Generator, size: int | tuple[int, ...]
-    ) -> NDArray[np.float64]: ...
+    ) -> NDArray[np.floating[Any]]: ...
     def draw(
         self, rng: np.random.Generator, size: int | tuple[int, ...] | None = None
-    ) -> float | NDArray[np.float64]:
+    ) -> float | NDArray[np.floating[Any]]:
         return rng.lognormal(self._mu, self._sigma, size=size)
 
     def __repr__(self) -> str:
@@ -540,10 +540,10 @@ class LogUniform(Distribution[float]):
     @overload
     def draw(
         self, rng: np.random.Generator, size: int | tuple[int, ...]
-    ) -> NDArray[np.float64]: ...
+    ) -> NDArray[np.floating[Any]]: ...
     def draw(
         self, rng: np.random.Generator, size: int | tuple[int, ...] | None = None
-    ) -> float | NDArray[np.float64]:
+    ) -> float | NDArray[np.floating[Any]]:
         return np.minimum(
             self._max,
             np.maximum(

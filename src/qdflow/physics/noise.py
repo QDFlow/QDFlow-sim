@@ -154,27 +154,27 @@ class NoiseParameters:
     latching_positive: bool = True
     sech_blur_width: float = 0.0
     unint_dot_magnitude: float = 0.0
-    unint_dot_spacing: NDArray[np.float64] | None = None
+    unint_dot_spacing: NDArray[np.floating[Any]] | None = None
     unint_dot_width: float = 0.0
     unint_dot_offset: float = 0.0
     coulomb_peak_spacing: float = 1.0
     coulomb_peak_offset: float = 0.0
     coulomb_peak_width: float | None = None
-    sensor_gate_coupling: NDArray[np.float64] | None = None
+    sensor_gate_coupling: NDArray[np.floating[Any]] | None = None
     use_pink_noise_all_dims: bool = True
 
-    def _get_unint_dot_spacing(self) -> NDArray[np.float64] | None:
+    def _get_unint_dot_spacing(self) -> NDArray[np.floating[Any]] | None:
         return self._unint_dot_spacing
 
-    def _set_unint_dot_spacing(self, val: NDArray[np.float64] | None):
+    def _set_unint_dot_spacing(self, val: NDArray[np.floating[Any]] | None):
         self._unint_dot_spacing = (
             np.array(val, dtype=np.float64) if val is not None else None
         )
 
-    def _get_sensor_gate_coupling(self) -> NDArray[np.float64] | None:
+    def _get_sensor_gate_coupling(self) -> NDArray[np.floating[Any]] | None:
         return self._sensor_gate_coupling
 
-    def _set_sensor_gate_coupling(self, val: NDArray[np.float64] | None):
+    def _set_sensor_gate_coupling(self, val: NDArray[np.floating[Any]] | None):
         self._sensor_gate_coupling = (
             np.array(val, dtype=np.float64) if val is not None else None
         )
@@ -265,8 +265,8 @@ class NoiseGenerator:
         self.rng = rng if rng is not None else _rng
 
     def coulomb_peak(
-        self, data_map: NDArray[np.float64], peak_center: float, peak_width: float
-    ) -> NDArray[np.float64]:
+        self, data_map: NDArray[np.floating[Any]], peak_center: float, peak_width: float
+    ) -> NDArray[np.floating[Any]]:
         """
         Calculate sensor value from potential using a single sech^2 lineshape,
         which is valid in the weak coupling regime of dot.
@@ -293,11 +293,11 @@ class NoiseGenerator:
 
     def high_coupling_coulomb_peak(
         self,
-        data_map: NDArray[np.float64],
+        data_map: NDArray[np.floating[Any]],
         peak_offset: float,
         peak_width: float,
         peak_spacing: float,
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.floating[Any]]:
         """
         Calculate sensor value from potential using a series of sech^2 functions.
 
@@ -336,8 +336,8 @@ class NoiseGenerator:
         return output
 
     def white_noise(
-        self, data_map: NDArray[np.float64], magnitude: float | NDArray[np.float64]
-    ) -> NDArray[np.float64]:
+        self, data_map: NDArray[np.floating[Any]], magnitude: float | NDArray[np.floating[Any]]
+    ) -> NDArray[np.floating[Any]]:
         """
         Adds white noise to `data_map`.
 
@@ -358,9 +358,9 @@ class NoiseGenerator:
         return data_map + self.rng.normal(0, magnitude, data_map.shape)
 
     def pink_noise(
-        self, data_map: NDArray[np.float64], magnitude: float | NDArray[np.float64],
+        self, data_map: NDArray[np.floating[Any]], magnitude: float | NDArray[np.floating[Any]],
         axis: int | None = None
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.floating[Any]]:
         """
         Adds pink (1/f) noise to `data_map`.
 
@@ -416,13 +416,13 @@ class NoiseGenerator:
 
     def telegraph_noise(
         self,
-        data_map: NDArray[np.float64],
-        magnitude: float | NDArray[np.float64],
-        stdev: float | NDArray[np.float64],
+        data_map: NDArray[np.floating[Any]],
+        magnitude: float | NDArray[np.floating[Any]],
+        stdev: float | NDArray[np.floating[Any]],
         ave_low_pixels: float,
         ave_high_pixels: float,
         axis: int,
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.floating[Any]]:
         """
         Adds  `telegraph noise <en.wikipedia.org/wiki/burst_noise>`_ to `data_map`.
 
@@ -503,11 +503,11 @@ class NoiseGenerator:
 
     def line_shift(
         self,
-        data_map: NDArray[np.float64],
+        data_map: NDArray[np.floating[Any]],
         ave_pixels: float,
         axis: int,
         shift_positive: bool = True,
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.floating[Any]]:
         """
         Mimics latching effects by shifting each line in `data_map` by a random
         number of pixels along the direction of the line.
@@ -577,14 +577,14 @@ class NoiseGenerator:
 
     def latching_noise(
         self,
-        data_map: NDArray[np.float64],
-        excited_data: NDArray[np.float64],
+        data_map: NDArray[np.floating[Any]],
+        excited_data: NDArray[np.floating[Any]],
         dot_charges: NDArray[np.int_],
         are_dots_combined: NDArray[np.bool_],
         ave_pixels: float,
         axis: int,
         shift_positive: bool = True,
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.floating[Any]]:
         """
         Adds latching effects by selecting data from ``excited_data`` for a few
         pixels after each transition.
@@ -667,13 +667,13 @@ class NoiseGenerator:
 
     def unint_dot_add(
         self,
-        data_map: NDArray[np.float64],
-        magnitude: float | NDArray[np.float64],
-        spacing: NDArray[np.float64],
+        data_map: NDArray[np.floating[Any]],
+        magnitude: float | NDArray[np.floating[Any]],
+        spacing: NDArray[np.floating[Any]],
         width: float,
         offset: float,
-        gate_data_matrix: NDArray[np.float64] | None = None,
-    ) -> NDArray[np.float64]:
+        gate_data_matrix: NDArray[np.floating[Any]] | None = None,
+    ) -> NDArray[np.floating[Any]]:
         """
         Add a series of transitions with quantum dot lineshapes to data.
 
@@ -729,8 +729,8 @@ class NoiseGenerator:
         return data_map + magnitude * noise
 
     def sech_blur(
-        self, data_map: NDArray[np.float64], blur_width: float, noise_axis: int
-    ) -> NDArray[np.float64]:
+        self, data_map: NDArray[np.floating[Any]], blur_width: float, noise_axis: int
+    ) -> NDArray[np.floating[Any]]:
         """
         Blurs `datamap` by convoluting with sech^2 kernel.
 
@@ -763,11 +763,11 @@ class NoiseGenerator:
 
     def sensor_gate(
         self,
-        data_map: NDArray[np.float64],
-        sensor_gate_coupling: NDArray[np.float64],
-        magnitude: float | NDArray[np.float64] = 1,
-        gate_data_matrix: NDArray[np.float64] | None = None,
-    ) -> NDArray[np.float64]:
+        data_map: NDArray[np.floating[Any]],
+        sensor_gate_coupling: NDArray[np.floating[Any]],
+        magnitude: float | NDArray[np.floating[Any]] = 1,
+        gate_data_matrix: NDArray[np.floating[Any]] | None = None,
+    ) -> NDArray[np.floating[Any]]:
         """
         Add a gradient due to sensor-gate coupling to data.
 
@@ -810,10 +810,10 @@ class NoiseGenerator:
 
     def calc_noisy_map(
         self,
-        data_map: NDArray[np.float64],
+        data_map: NDArray[np.floating[Any]],
         latching_data: None
-        | tuple[NDArray[np.float64], NDArray[np.int_], NDArray[np.bool_]] = None,
-        gate_data_matrix: None | NDArray[np.float64] = None,
+        | tuple[NDArray[np.floating[Any]], NDArray[np.int_], NDArray[np.bool_]] = None,
+        gate_data_matrix: None | NDArray[np.floating[Any]] = None,
         *,
         noise_default=True,
         white_noise: bool | None = None,
@@ -824,7 +824,7 @@ class NoiseGenerator:
         unintended_dot: bool | None = None,
         sech_blur: bool | None = None,
         sensor_gate: bool | None = None,
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.floating[Any]]:
         """
         Adds noise to `data_map` with parameters specified by ``self.noiseParameters``.
 
@@ -1036,9 +1036,9 @@ class NoiseRandomization:
     sech_blur_width: float | Distribution[float] = 0.0
     unint_dot_magnitude: float | Distribution[float] = 0.0
     unint_dot_spacing: (
-        NDArray[np.float64]
+        NDArray[np.floating[Any]]
         | Distribution[float]
-        | Distribution[NDArray[np.float64]]
+        | Distribution[NDArray[np.floating[Any]]]
         | None
     ) = None
     unint_dot_offset: float | Distribution[float] = 0.0
@@ -1047,9 +1047,9 @@ class NoiseRandomization:
     coulomb_peak_width: float | Distribution[float] | None = None
     coulomb_peak_spacing: float | Distribution[float] = 1.0
     sensor_gate_coupling: (
-        NDArray[np.float64]
+        NDArray[np.floating[Any]]
         | Distribution[float]
-        | Distribution[NDArray[np.float64]]
+        | Distribution[NDArray[np.floating[Any]]]
         | None
     ) = None
 

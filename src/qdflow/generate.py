@@ -123,11 +123,11 @@ class CSDOutput:
         Coulomb potential at an excited state at each point at a specific sensor.
     '''
     physics:simulation.PhysicsParameters=field(default_factory=lambda:simulation.PhysicsParameters())
-    V_x:NDArray[np.float64]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
-    V_y:NDArray[np.float64]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    V_x:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    V_y:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
     x_gate:int=0
     y_gate:int=0
-    V_gates:NDArray[np.float64]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    V_gates:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
     sensor:NDArray[np.float32]=field(default_factory=lambda:np.zeros(0, dtype=np.float32))
     are_dots_occupied:NDArray[np.bool_]=field(default_factory=lambda:np.zeros(0, dtype=np.bool_))
     are_dots_combined:NDArray[np.bool_]=field(default_factory=lambda:np.zeros(0, dtype=np.bool_))
@@ -143,19 +143,19 @@ class CSDOutput:
     def _set_physics(self, val:simulation.PhysicsParameters):
         self._physics = val.copy()
 
-    def _get_V_x(self) -> NDArray[np.float64]:
+    def _get_V_x(self) -> NDArray[np.floating[Any]]:
         return self._V_x
-    def _set_V_x(self, val:NDArray[np.float64]):
+    def _set_V_x(self, val:NDArray[np.floating[Any]]):
         self._V_x = np.array(val, dtype=np.float64)
 
-    def _get_V_y(self) -> NDArray[np.float64]:
+    def _get_V_y(self) -> NDArray[np.floating[Any]]:
         return self._V_y
-    def _set_V_y(self, val:NDArray[np.float64]):
+    def _set_V_y(self, val:NDArray[np.floating[Any]]):
         self._V_y = np.array(val, dtype=np.float64)
 
-    def _get_V_gates(self) -> NDArray[np.float64]:
+    def _get_V_gates(self) -> NDArray[np.floating[Any]]:
         return self._V_gates
-    def _set_V_gates(self, val:NDArray[np.float64]):
+    def _set_V_gates(self, val:NDArray[np.floating[Any]]):
         self._V_gates = np.array(val, dtype=np.float64)
 
     def _get_sensor(self) -> NDArray[np.float32]:
@@ -402,7 +402,7 @@ class PhysicsRandomization:
 
     dot_spacing:float|distribution.Distribution[float]=200
     x_margins:float|distribution.Distribution[float]=200
-    gate_x_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.float64]]|NDArray[np.float64]=0
+    gate_x_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
     q:float|distribution.Distribution[float]=-1
     K_0:float|distribution.Distribution[float]=5
     sigma:float|distribution.Distribution[float]=60
@@ -416,16 +416,16 @@ class PhysicsRandomization:
     screening_length:float|distribution.Distribution[float]=100
     rho:float|distribution.Distribution[float]=15
     h:float|distribution.Distribution[float]=80
-    rho_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.float64]]|NDArray[np.float64]=0
-    h_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.float64]]|NDArray[np.float64]=0
+    rho_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    h_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
     plunger_peak:float|distribution.Distribution[float]=-7
-    plunger_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.float64]]|NDArray[np.float64]=0
-    external_barrier_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.float64]]|NDArray[np.float64]=2.
+    plunger_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    external_barrier_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=2.
     barrier_peak:float|distribution.Distribution[float]=5.
-    internal_barrier_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.float64]]|NDArray[np.float64]=0
+    internal_barrier_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
     sensor_y:float|distribution.Distribution[float]=-250
-    sensor_y_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.float64]]|NDArray[np.float64]=0
-    sensor_x_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.float64]]|NDArray[np.float64]=0
+    sensor_y_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    sensor_x_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
     WKB_coef:float|distribution.Distribution[float]=.089
     v_F:float|distribution.Distribution[float]=3.0e13
     
@@ -690,8 +690,8 @@ def random_physics(randomization_params:PhysicsRandomization, num_physics:int|No
 
 
 def calc_csd(n_dots:int, physics:simulation.PhysicsParameters,
-             V_x:NDArray[np.float64], V_y:NDArray[np.float64],
-             V_gates:NDArray[np.float64], x_dot:int, y_dot:int,
+             V_x:NDArray[np.floating[Any]], V_y:NDArray[np.floating[Any]],
+             V_gates:NDArray[np.floating[Any]], x_dot:int, y_dot:int,
              numerics:simulation.NumericsParameters|None=None,
              include_excited:bool=True, include_converged:bool=False,
              include_current:bool=False) -> CSDOutput:
@@ -735,7 +735,8 @@ def calc_csd(n_dots:int, physics:simulation.PhysicsParameters,
     phys.K_mat = simulation.calc_K_mat(phys.x, phys.K_0, phys.sigma)
     phys.g0_dx_K_plus_1_inv = np.linalg.inv(phys.g_0*(phys.x[1]-phys.x[0])*phys.K_mat + np.identity(len(phys.x)))
     
-    for d, v in enumerate(V_gates):
+    for d in range(len(V_gates)):
+        v = V_gates[d]
         phys.gates[2*d+1].peak = v
 
     N_v_x = len(V_x)
@@ -754,6 +755,11 @@ def calc_csd(n_dots:int, physics:simulation.PhysicsParameters,
         csd_out.excited_sensor = np.zeros((N_v_x, N_v_y, len(phys.sensors)), dtype=np.float32)
     if include_current:
         csd_out.current = np.zeros((N_v_x, N_v_y), dtype=np.float32)
+
+    dot_charge:NDArray[np.int_]
+    are_dot_combined:NDArray[np.bool_]
+    ex_dot_charge:NDArray[np.int_]
+    ex_are_dot_combined:NDArray[np.bool_]
 
     dot_charge = np.zeros(n_dots, dtype=np.int_)
     are_dot_combined = np.zeros(n_dots-1, dtype=np.bool_)
@@ -801,7 +807,7 @@ def calc_csd(n_dots:int, physics:simulation.PhysicsParameters,
     
 
 def calc_2d_csd(physics:simulation.PhysicsParameters,
-                V_x:NDArray[np.float64], V_y:NDArray[np.float64],
+                V_x:NDArray[np.floating[Any]], V_y:NDArray[np.floating[Any]],
                 numerics:simulation.NumericsParameters|None=None,
                 include_excited:bool=True, include_converged=False,
                 include_current=False) -> CSDOutput:
@@ -934,8 +940,8 @@ class RaysOutput:
         Coulomb potential at an excited state at each point at a specific sensor.
     '''
     physics:simulation.PhysicsParameters=field(default_factory=lambda:simulation.PhysicsParameters())
-    centers:NDArray[np.float64]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
-    rays:NDArray[np.float64]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    centers:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    rays:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
     resolution:int=0 # must be at least 2
     sensor:NDArray[np.float32]=field(default_factory=lambda:np.zeros(0, dtype=np.float32))
     are_dots_occupied:NDArray[np.bool_]=field(default_factory=lambda:np.zeros(0, dtype=np.bool_))
@@ -952,14 +958,14 @@ class RaysOutput:
     def _set_physics(self, val:simulation.PhysicsParameters):
         self._physics = val.copy()
 
-    def _get_centers(self) -> NDArray[np.float64]:
+    def _get_centers(self) -> NDArray[np.floating[Any]]:
         return self._centers
-    def _set_centers(self, val:NDArray[np.float64]):
+    def _set_centers(self, val:NDArray[np.floating[Any]]):
         self._centers = np.array(val, dtype=np.float64)
 
-    def _get_rays(self) -> NDArray[np.float64]:
+    def _get_rays(self) -> NDArray[np.floating[Any]]:
         return self._rays
-    def _set_rays(self, val:NDArray[np.float64]):
+    def _set_rays(self, val:NDArray[np.floating[Any]]):
         self._rays = np.array(val, dtype=np.float64)
 
     def _get_sensor(self) -> NDArray[np.float32]:
@@ -1071,8 +1077,8 @@ CSDOutput.current = property(CSDOutput._get_current, CSDOutput._set_current) # t
 
 
 
-def calc_rays(physics:simulation.PhysicsParameters, centers:NDArray[np.float64],
-              rays:NDArray[np.float64], resolution:int,
+def calc_rays(physics:simulation.PhysicsParameters, centers:NDArray[np.floating[Any]],
+              rays:NDArray[np.floating[Any]], resolution:int,
               numerics:simulation.NumericsParameters|None=None,
               include_excited:bool=False, include_converged=False,
              include_current:bool=False) -> RaysOutput:
@@ -1127,6 +1133,11 @@ def calc_rays(physics:simulation.PhysicsParameters, centers:NDArray[np.float64],
         rays_out.excited_sensor = np.zeros((n_centers, n_rays, resolution, len(phys.sensors)), dtype=np.float32)
     if include_current:
         rays_out.current = np.zeros((n_centers, n_rays, resolution), dtype=np.float32)
+
+    dot_charge:NDArray[np.int_]
+    are_dot_combined:NDArray[np.bool_]
+    ex_dot_charge:NDArray[np.int_]
+    ex_are_dot_combined:NDArray[np.bool_]
 
     dot_charge = np.zeros(n_dots, dtype=np.int_)
     are_dot_combined = np.zeros(n_dots-1, dtype=np.bool_)
