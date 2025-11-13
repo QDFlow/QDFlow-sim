@@ -31,3 +31,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest-cov>=4.0"]
+
+[tool.pytest.ini_options]
+pythonpath = "src"

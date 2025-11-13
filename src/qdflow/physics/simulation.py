@@ -1617,7 +1617,7 @@ class ThomasFermi:
         charges : ndarray[float]
             An array with length equal to the number of
             islands, where each entry of the array is the total induced
-            prticle number on the corresponding island.
+            particle number on the corresponding island.
         '''
         delta_x = (physics.x[-1] - physics.x[0]) / (len(physics.x) - 1)
         charges = np.zeros(len(islands), dtype=np.float64)
@@ -1844,7 +1844,7 @@ class ThomasFermi:
 
 
     @staticmethod
-    def calc_weight(physics:PhysicsParameters, num_islands:int, p_WKB:NDArray[np.floating[Any]],
+    def calc_weight(physics:PhysicsParameters, p_WKB:NDArray[np.floating[Any]],
                     energy_matrix:NDArray[np.floating[Any]], charges:NDArray[np.floating[Any]],
                     u:NDArray[np.int_], v:NDArray[np.int_]) -> float:
         '''
@@ -1854,8 +1854,6 @@ class ThomasFermi:
         ----------
         physics : PhysicsParameters
             ``PhysicsParameters`` dataclass with the physical device parameters.
-        num_islands : int
-            The number of islands, equal to ``len(islands)``.
         p_WKB : ndarray[float]
             An array with length equal to the number of barriers, where each
             entry is the transition rate across the corresponding barrier.
@@ -1881,6 +1879,7 @@ class ThomasFermi:
         '''
         diff = list(np.array(v) - np.array(u))
         nonzero_diff = np.nonzero(diff)[0]
+        num_islands = energy_matrix.shape[0]
 
         # check to make sure u -> v is a valid transition
         if len(nonzero_diff) == 0:
@@ -2034,7 +2033,7 @@ class ThomasFermi:
             for y in list(G.nodes()):
                 if x != y:
                     G.add_edge(x, y, weight=ThomasFermi.calc_weight(physics,
-                            num_isls, p_WKB, energy_matrix, charges, x, y))
+                            p_WKB, energy_matrix, charges, x, y))
         return G
     
 
