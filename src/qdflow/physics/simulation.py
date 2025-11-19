@@ -451,9 +451,9 @@ class NumericsParameters:
         to allow when creating the Markov graph.
     '''
 
-    calc_n_max_iterations_no_guess: int = 500
-    calc_n_max_iterations_guess: int = 100
-    calc_n_rel_tol: float = 1e-4
+    calc_n_max_iterations_no_guess: int = 1000
+    calc_n_max_iterations_guess: int = 200
+    calc_n_rel_tol: float = 1e-3
     calc_n_coulomb_steps: int = 1
     calc_n_use_combination_method: bool = True
     island_relative_cutoff: float = 1e-1
