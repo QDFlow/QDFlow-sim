@@ -2672,13 +2672,13 @@ class ThomasFermi:
 
         Parameters
         ----------
-        inc_energy_matrix : bool
+        include_energy_matrix : bool
             Whether to include the capacitance model and WKB probabilities in
-            the output
-        inc_curr : bool
+            the output.
+        include_current : bool
             Whether to perform current calculations and include the results in
-            the output
-        inc_trans : bool
+            the output.
+        include_transitions : bool
             Whether to perform current calculations and include the transition
             count in the output
         n_guess : ndarray[float] | None
@@ -2743,7 +2743,7 @@ class ThomasFermi:
         output.converged = self.converged
         output.n = np.array(self.n)
 
-        if inc_curr or inc_trans:
+        if include_current or include_transitions:
             self.p_WKB, self.tranmission_coef = ThomasFermi.calc_WKB_prob(self.physics,
                             self.qV_TF, self.islands, self.barriers, self.is_short_circuit)
             self.G = ThomasFermi.create_graph(self.physics, self.numerics, self.energy_matrix,
@@ -2751,16 +2751,16 @@ class ThomasFermi:
             self.dist = ThomasFermi.calc_stable_dist(self.G, self.integer_charges)
             self.graph_charge = ThomasFermi.calc_graph_charge(self.G, self.dist)
 
-        if inc_curr:
+        if include_current:
             self.current = ThomasFermi.calc_current(self.physics, self.G, self.dist,
                             self.energy_matrix, self.charges, self.p_WKB, self.is_short_circuit)
             output.current = self.current
             
-        if inc_trans:
+        if include_transitions:
             self.trans_count = ThomasFermi.count_transitions(self.numerics, self.G, self.graph_charge)
             output.transition_count = self.trans_count
 
-        if inc_energy_matrix:
+        if include_energy_matrix:
             output.energy_matrix = np.array(self.energy_matrix)
         
         return output

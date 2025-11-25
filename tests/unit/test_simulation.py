@@ -979,13 +979,13 @@ class TestThomasFermi:
     def test_run_calculations():
         phys = simulation.PhysicsParameters()
         tf = simulation.ThomasFermi(phys)
-        out = tf.run_calculations(inc_trans=True)
+        out = tf.run_calculations(include_transitions=True)
         assert out.transition_count is not None
         assert out.current is None
         assert out.energy_matrix is None
         phys = simulation.PhysicsParameters()
         tf = simulation.ThomasFermi(phys)
-        out = tf.run_calculations(inc_curr=True, inc_energy_matrix=True)
+        out = tf.run_calculations(include_current=True, include_energy_matrix=True)
         assert out.transition_count is None
         assert out.current is not None
         assert out.energy_matrix is not None
