@@ -418,7 +418,7 @@ class TestThomasFermi:
         n = np.array([.01, .01, .01,  .01, 2, 3, 4,  5,  2,  2,
                       .01, .01, .01, 2,  4, 4, 2, .01, .01, .01])
         islands = np.array([[4,10], [13,17]], dtype=np.int_)
-        ch = simulation.ThomasFermi.calc_charges(phys, n, islands)
+        ch = simulation.ThomasFermi.calc_approximate_charges(phys, n, islands)
         assert ch.shape == (2,)
         assert np.allclose(ch, delta_x * np.array([18, 12]))
         
@@ -442,7 +442,7 @@ class TestThomasFermi:
         n = np.array([.01, .01, .01, .01, 20, 7, 1, 3, 3, 1,
                       .01, .01, .01, 2, 4, 4, 2, .01, .01, .01])
         islands = np.array([[4,10], [13,17]], dtype=np.int_)
-        charges = simulation.ThomasFermi.calc_charges(phys, n, islands)
+        charges = simulation.ThomasFermi.calc_approximate_charges(phys, n, islands)
         em = simulation.ThomasFermi.calc_energy_matrix(phys, numer, K_mat, n, islands, charges)
         assert em.shape == (2,2)
         assert np.allclose(em, em.T)
@@ -467,7 +467,7 @@ class TestThomasFermi:
         numer = simulation.NumericsParameters()
         energy_matrix = np.array([[20,10], [10,30]])
         charges = np.array([2.4, 3.4])
-        ic = simulation.ThomasFermi.calc_integer_charges(numer, energy_matrix, charges)
+        ic = simulation.ThomasFermi.calc_island_charges(numer, energy_matrix, charges)
         assert ic.shape == (2,)
         assert np.all(ic == [3,3])
 
@@ -761,17 +761,17 @@ class TestThomasFermi:
         assert tr == 0
 
     @staticmethod
-    def test_sensor_from_integer_charges():
+    def test_sensor_from_island_charges():
         x = np.linspace(-50,50,11)
         sensors = np.array([[-30,-50,0], [30,-50,0]])
         phys = simulation.PhysicsParameters(x=x, q=-1, screening_length=50, sensors=sensors)
         n = np.array([.1,3,6,9,.1,.01,.1,.1,18,.1,.1])
         islands = np.array([[1,4],[8,9]])
-        sens = simulation.ThomasFermi.sensor_from_integer_charges(phys, np.array([0,1]), n, islands)
+        sens = simulation.ThomasFermi.sensor_from_island_charges(phys, np.array([0,1]), n, islands)
         assert sens.shape == (2,)
         assert np.isclose(sens[1], -1)
         assert sens[0] > -1 and sens[0] < 0
-        sens = simulation.ThomasFermi.sensor_from_integer_charges(phys, np.array([1,0]), n, islands)
+        sens = simulation.ThomasFermi.sensor_from_island_charges(phys, np.array([1,0]), n, islands)
         assert sens.shape == (2,)
         assert sens[0] > -1
         assert sens[1] > sens[0] and sens[1] < 0
@@ -887,7 +887,7 @@ class TestThomasFermi:
         phys = simulation.PhysicsParameters(x=x, gates=gates, dot_regions=None)
         n = np.ones(101)
         islands = np.array([[-45,-35],[-25,-15],[-5,5],[15,25],[35,45]])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([2,3]), np.array([False]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([2,3]), np.array([False]))
         assert ic.shape == (5,)
         assert np.all(ic == [0,2,0,3,0])
         
@@ -896,7 +896,7 @@ class TestThomasFermi:
         phys = simulation.PhysicsParameters(x=x, dot_regions=dot_regions)
         n = np.ones(101)
         islands = np.array([[-25,-7],[13,38]])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([2,3]), np.array([False]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([2,3]), np.array([False]))
         assert ic.shape == (2,)
         assert np.all(ic == [2,3])
 
@@ -904,7 +904,7 @@ class TestThomasFermi:
         phys = simulation.PhysicsParameters(x=x, dot_regions=dot_regions)
         n = np.ones(101)
         islands = np.array([[-25,38]])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([5,0]), np.array([True]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([5,0]), np.array([True]))
         assert ic.shape == (1,)
         assert np.all(ic == [5])
 
@@ -912,7 +912,7 @@ class TestThomasFermi:
         phys = simulation.PhysicsParameters(x=x, dot_regions=dot_regions)
         n = np.ones(101)
         islands = np.array([[-33,-23],[-19,-7],[11,31]])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([5,0]), np.array([False]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([5,0]), np.array([False]))
         assert ic.shape == (3,)
         assert np.all(ic == [2,3,0])
 
@@ -920,14 +920,14 @@ class TestThomasFermi:
         phys = simulation.PhysicsParameters(x=x, dot_regions=dot_regions)
         n = np.ones(101)
         islands = np.array([])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([2,3]), np.array([False]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([2,3]), np.array([False]))
         assert len(ic) == 0
     
         dot_regions = np.array([[-30,-10],[10,30]])
         phys = simulation.PhysicsParameters(x=x, dot_regions=dot_regions)
         n = np.ones(101)
         islands = np.array([[-32,-16],[-11,11],[14,32]])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([1,0]), np.array([True]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([1,0]), np.array([True]))
         assert ic.shape == (3,)
         assert np.all(ic == [0,1,0])
 
@@ -935,7 +935,7 @@ class TestThomasFermi:
         phys = simulation.PhysicsParameters(x=x, dot_regions=dot_regions)
         n = np.ones(101)
         islands = np.array([[-32,-16],[-11,11],[14,32]])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([2,0]), np.array([True]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([2,0]), np.array([True]))
         assert ic.shape == (3,)
         assert np.all(ic == [0,1,1])
 
@@ -943,7 +943,7 @@ class TestThomasFermi:
         phys = simulation.PhysicsParameters(x=x, dot_regions=dot_regions)
         n = np.zeros(101)
         islands = np.array([[-32,-26],[-21,21],[24,32]])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([3,0]), np.array([True]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([3,0]), np.array([True]))
         assert ic.shape == (3,)
         assert np.all(ic == [1,1,1])
 
@@ -951,7 +951,7 @@ class TestThomasFermi:
         phys = simulation.PhysicsParameters(x=x, dot_regions=dot_regions)
         n = np.ones(101)
         islands = np.array([[6,28]])+50
-        ic = simulation.ThomasFermi.integer_charges_from_charge_state(phys, n, islands, np.array([0,2]), np.array([False]))
+        ic = simulation.ThomasFermi.island_charges_from_charge_state(phys, n, islands, np.array([0,2]), np.array([False]))
         assert ic.shape == (1,)
         assert np.all(ic == [2])
 

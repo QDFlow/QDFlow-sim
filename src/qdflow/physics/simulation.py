@@ -16,8 +16,8 @@ Define an instance of the ``ThomasFermi`` class with the
 specified physical parameters.
 
 >>> output = tf_simulation.run_calculations()
->>> output.integer_charges
-array([2, 2]) 
+>>> output.island_charges
+array([2, 1]) 
 
 Perform the calculation. The results are returned in a dataclass.
 In this example, the stable charge configuration has 2 electrons in each dot.
