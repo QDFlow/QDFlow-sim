@@ -1172,7 +1172,7 @@ def calc_rays(physics:simulation.PhysicsParameters, centers:NDArray[np.floating[
                     V = simulation.calc_V(phys.gates, phys.x, 0, 0, eff_peaks) 
                     phys.V = V
                     tf = simulation.ThomasFermi(phys, numerics=numerics)
-                    tf_out = tf.run_calculations(n_guess=n_guess, inc_curr=include_current)
+                    tf_out = tf.run_calculations(n_guess=n_guess, include_current=include_current)
                     n_guess = tf.n
                     rays_out.are_dots_occupied[c_i,r_i,i,:] = tf_out.are_dots_occupied
                     rays_out.are_dots_combined[c_i,r_i,i,:] = tf_out.are_dots_combined
