@@ -1,12 +1,12 @@
 '''
 This module contains classes and functions for generating CSDs and ray data.
 
-Data generation is done with the ``calc_csd()``, calc_2d_csd(), and
+Data generation is done with the ``calc_csd()``, ``calc_2d_csd()``, and
 ``calc_rays()`` functions. These functions input a ``PhysicsParameters`` object,
 as well as the desired resolution and voltages to sweep. The functions then
 run the physics simulation once for each point in the desired range, and return
-the resulting data in a single instance of the ``CSDOutput`` or ``RaysOutput``
-dataclasses.
+the resulting data in a single instance of a ``CSDOutput`` or ``RaysOutput``
+dataclass.
 
 Often, diagrams with a wide variety of features are desired in a dataset.
 This is accomplished by randomizing the values of the ``PhysicsParameters``
@@ -21,7 +21,6 @@ Examples
 >>> from qdflow.util import distribution
 >>> phys_rand = generate.PhysicsRandomization.default()
 >>> phys_rand.mu = distribution.Uniform(0, 1.2) # adjust parameter ranges here
-
 >>> n_devices = 10
 >>> phys_params = generate.random_physics(phys_rand, n_devices)
 
@@ -29,11 +28,10 @@ This will generate a list of 10 random sets of device parameters.
 
 >>> import numpy as np
 >>> phys = phys_params[0]
-
 >>> # Set ranges and resolution of plunger gate sweeps
 >>> V_x = np.linspace(2., 16., 100)
 >>> V_y = np.linspace(2., 16., 100)
-
+>>> # Run calculation
 >>> csd = generate.calc_2d_csd(phys, V_x, V_y)
 
 ``csd`` is a single instance of the ``CSDOutput`` dataclass, which contains the
@@ -81,12 +79,16 @@ class CSDOutput:
     ----------
     physics : PhysicsParameters
         The set of physics parameters used in the simulation. 
-    V_x, V_y : ndarray[float]
-        Arrays of voltage values along the x- and y-axes, which together define
-        the coordinates of each of the pixels.
-    x_gate, y_gate : int
-        The indeces of the dots whose gate voltages are plotted on the
-        x- or y-axes.
+    V_x : ndarray[float]
+        An array of voltage values along the x-axis, which defines
+        the x-coordinates of each of the pixels.
+    V_y : ndarray[float]
+        An array of voltage values along the y-axis, which defines
+        the y-coordinates of each of the pixels.
+    x_gate : int
+        The index of the dot whose gate voltages is plotted on the y-axis.
+    y_gate : int
+        The index of the dot whose gate voltages is plotted on the y-axis.
     V_gates : ndarray[float]
         An array of length ``n_dots`` giving the voltages of each of the plunger
         gates. This is relevant only for plunger gates whose voltages remain
@@ -108,36 +110,103 @@ class CSDOutput:
         total number of charges in each dot at each pixel in the diagram.
         In the case of combined dots, the total number of charges will be
         entered in the left-most spot, with the other spots padded with zeros.
-    converged : ndarray[bool] | None
+    converged : ndarray[bool] or None
         An array with shape ``(len(V_x), len(V_y))``, indicating whether the
         calculation of n(x) properly converged at each pixel in the diagram.
-    dot_transitions : ndarray[bool] | None
+    dot_transitions : ndarray[bool] or None
         An array with shape ``(len(V_x), len(V_y), n_dots)``, indicating whether
-        a transition in each dot occurs at each pisel in the diagram.
-    are_transitions_combined : ndarray[bool] | None
+        a transition in each dot occurs at each pixel in the diagram.
+    are_transitions_combined : ndarray[bool] or None
         An array with shape ``(len(V_x), len(V_y), n_dots-1)``, indicating at
         each pixel in the diagram, whether a transition occurs on a combined dot
         comprised of dots on either side of each internal barrier.
-    excited_sensor : ndarray[float] | None
+    excited_sensor : ndarray[float] or None
         An array with shape ``(len(V_x), len(V_y), n_sensors)`` giving the
-        Coulomb potential at an excited state at each point at a specific sensor.
+        Coulomb potential in an excited state at each pixel in the diagram for a specific sensor.
+    current : ndarray[float] or None
+        An array with shape ``(len(V_x), len(V_y))`` giving the current
+        across the nanowire at each pixel in the diagram.
     '''
     physics:simulation.PhysicsParameters=field(default_factory=lambda:simulation.PhysicsParameters())
+    '''
+    The set of physics parameters used in the simulation. 
+    '''
     V_x:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    '''
+    An array of voltage values along the x-axis, which defines
+    the x-coordinates of each of the pixels.
+    '''
     V_y:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    '''
+    An array of voltage values along the y-axis, which defines
+    the y-coordinates of each of the pixels.
+    '''
     x_gate:int=0
+    '''
+    The index of the dot whose gate voltages is plotted on the y-axis.
+    '''
     y_gate:int=0
+    '''
+    The index of the dot whose gate voltages is plotted on the y-axis.
+    '''
     V_gates:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    '''
+    An array of length ``n_dots`` giving the voltages of each of the plunger
+    gates. This is relevant only for plunger gates whose voltages remain
+    constant over the whole diagram, and it contains values of the constant
+    voltages. For the two plunger gates corresponding to the x- and y-axes
+    (``x_gate`` and ``y_gate``), the value of ``V_gates`` is arbitrary.
+    '''
     sensor:NDArray[np.float32]=field(default_factory=lambda:np.zeros(0, dtype=np.float32))
+    '''
+    An array with shape ``(len(V_x), len(V_y), n_sensors)`` giving the
+    Coulomb potential at each point at a specific sensor.
+    '''
     are_dots_occupied:NDArray[np.bool_]=field(default_factory=lambda:np.zeros(0, dtype=np.bool_))
+    '''
+    An array with shape ``(len(V_x), len(V_y), n_dots)``, indicating whether
+    each dot is occupied at each pixel in the diagram.
+    '''
     are_dots_combined:NDArray[np.bool_]=field(default_factory=lambda:np.zeros(0, dtype=np.bool_))
+    '''
+    An array with shape ``(len(V_x), len(V_y), n_dots-1)``, indicating
+    at each pixel in the diagram, whether the dots on each side of an
+    internal barrier are combined together (i.e. the barrier is too low).
+    '''
     dot_charges:NDArray[np.int_]=field(default_factory=lambda:np.zeros(0, dtype=np.int_))
+    '''
+    An array with shape ``(len(V_x), len(V_y), n_dots)``, indicating the
+    total number of charges in each dot at each pixel in the diagram.
+    In the case of combined dots, the total number of charges will be
+    entered in the left-most spot, with the other spots padded with zeros.
+    '''
     converged:NDArray[np.bool_]|None=None
+    '''
+    An array with shape ``(len(V_x), len(V_y))``, indicating whether the
+    calculation of n(x) properly converged at each pixel in the diagram.
+    '''
     dot_transitions:NDArray[np.bool_]|None=None
+    '''
+    An array with shape ``(len(V_x), len(V_y), n_dots)``, indicating whether
+    a transition in each dot occurs at each pixel in the diagram.
+    '''
     are_transitions_combined:NDArray[np.bool_]|None=None
+    '''
+    An array with shape ``(len(V_x), len(V_y), n_dots-1)``, indicating at
+    each pixel in the diagram, whether a transition occurs on a combined dot
+    comprised of dots on either side of each internal barrier.
+    '''
     excited_sensor:NDArray[np.float32]|None=None
+    '''
+    An array with shape ``(len(V_x), len(V_y), n_sensors)`` giving the
+    Coulomb potential in an excited state at each pixel in the diagram for a specific sensor.
+    '''
     current:NDArray[np.float32]|None=None
-    
+    '''
+    An array with shape ``(len(V_x), len(V_y))`` giving the current
+    across the nanowire at each pixel in the diagram.
+    '''
+
     def _get_physics(self) -> simulation.PhysicsParameters:
         return self._physics
     def _set_physics(self, val:simulation.PhysicsParameters):
@@ -278,7 +347,7 @@ class PhysicsRandomization:
     to the generated ``PhysicsParameters`` object.
 
     All other attributes should either be provided a single value
-    (if no randmization is needed), or a ``distribution.Distribution`` object,
+    (if no randmization is needed), or a ``distribution.Distribution``,
     from which the value will be drawn.
     
     Parameters
@@ -314,15 +383,15 @@ class PhysicsRandomization:
     q : float | Distribution[float]
         The charge of a particle, -1 for electrons, +1 for holes.
     K_0 : float | Distribution[float]
-        The electron-electron Coulomb interaction strength (in meV * nm)
+        The electron-electron Coulomb interaction strength (in meV * nm).
     sigma : float | Distribution[float]
         The softening parameter (in nm) for the el-el Coulomb interaction used
-        to avoid divergence when x = x'. `sigma` should be on the scale of
-        the width of the nanowire.
+        to avoid divergence when :math:`x_1 = x_2`.
+        ``sigma`` should be on the scale of the width of the nanowire.
     mu : float | Distribution[float]
-        The Fermi level (in meV)
+        The Fermi level (in meV).
     g_0 : float | Distribution[float]
-        The coefficient of the density of states
+        The coefficient of the density of states.
     V_L : float | Distribution[float]
         The voltage applied to left lead (in mV).
     V_R : float | Distribution[float]
@@ -385,50 +454,189 @@ class PhysicsRandomization:
         If a float distribution is provided, an ndarray of the appropriate size
         will be generated by repeatedly drawing from the distribution.
     WKB_coef : float | Distribution[float]
-        Coefficient (with units 1/(nm*sqrt(meV))) which goes in the exponent
+        Coefficient (with units :math:`\\frac{1}{nm\\sqrt{meV}}`) which goes in the exponent
         while calculating the WKB probability, setting the strength of WKB tunneling.
-        WKB_coef should be equal to ``sqrt(2*m)/hbar``
-        (converted to units of 1/(nm*sqrt(meV))), where ``m`` is the effective
-        mass of a particle, and ``hbar`` is the reduced Planck's constant.
+        ``WKB_coef`` should be equal to :math:`\\sqrt{2m}{\\hbar}`, where :math:`m` is the effective
+        mass of a particle, and :math`\\hbar` is the reduced Planck's constant.
     v_F : float | Distribution[float]
         The fermi velocity (in nm/s).
     '''
     num_x_points:int=151
+    '''
+    The resolution of the x-axis. This value is not randomized.
+    '''
     num_dots:int=2
+    '''
+    The number of dots. This value is not randomized.
+    '''
     barrier_current:float=1
+    '''
+    An arbitrary low current set to the device when in barrier mode.
+    This value is not randomized.
+    '''
     short_circuit_current:float=1e10
+    '''
+    An arbitrary high current value given to the device when in
+    open / short circuit mode. This value is not randomized.
+    '''
     num_sensors:int=1
+    '''
+    The number of sensors to include. This value is not randomized.
+    '''
     multiply_gates_by_q:bool=True
-
+    '''
+    Whether to multiply `barrier_peak`, `plunger_peak`, `barrier_peak_variations`,
+    `plunger_peak_variations`, and `external_barrier_peak_variations` by `q`,
+    changing the sign if ``q == -1``. Default True.
+    '''
     dot_spacing:float|distribution.Distribution[float]=200
+    '''
+    The average distance (in nm) between dots.
+    '''
     x_margins:float|distribution.Distribution[float]=200
+    '''
+    The length (in nm) of the nanowire to model on either end of the system.
+    The total length of the nanowire will be:
+    ``2 * (x_margins) + (num_dots - 1) * (dot_spacing)``.
+    '''
     gate_x_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    '''
+    An array with length equal to the total number of gates (barrier and plunger),
+    giving the offset of the x-coordinate of each gate (in nm) relative to
+    their positions if they were evenly spaced with spacing ``dot_spacing``.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    '''
     q:float|distribution.Distribution[float]=-1
+    '''
+    The charge of a particle, -1 for electrons, +1 for holes.
+    '''
     K_0:float|distribution.Distribution[float]=5
+    '''
+    The electron-electron Coulomb interaction strength (in meV * nm).
+    '''
     sigma:float|distribution.Distribution[float]=60
+    '''
+    The softening parameter (in nm) for the el-el Coulomb interaction used
+    to avoid divergence when :math:`x_1 = x_2`.
+    ``sigma`` should be on the scale of the width of the nanowire.
+    '''
     mu:float|distribution.Distribution[float]=.5
+    '''
+    The Fermi level (in meV).
+    '''
     g_0:float|distribution.Distribution[float]=.0065
+    '''
+    The coefficient of the density of states.
+    '''
     V_L:float|distribution.Distribution[float]=-.01
+    '''
+    The voltage applied to left lead (in mV).
+    '''
     V_R:float|distribution.Distribution[float]=.01
+    '''
+    The voltage applied to right lead (in mV).
+    '''
     beta:float|distribution.Distribution[float]=100
+    '''
+    The inverse temperature ``1/(k_B T)`` used to calculate ``n(x)``.
+    '''
     kT:float|distribution.Distribution[float]=.01
+    '''
+    The temperature ``(k_B T)`` used in the transport calculations.
+    '''
     c_k:float|distribution.Distribution[float]=1.2
+    '''
+    The coefficient (in meV*nm) that determines the kenetic energy of the
+    Fermi sea on each island.
+    '''
     screening_length:float|distribution.Distribution[float]=100
+    '''
+    The screening length (in nm) for the Coulomb interaction.
+    '''
     rho:float|distribution.Distribution[float]=15
+    '''
+    The radius (in nm) of the cylindrical gates.
+    '''
     h:float|distribution.Distribution[float]=80
+    '''
+    The distance (in nm) of the gates from the nanowire.
+    '''
     rho_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    '''
+    An array with length equal to the total number of gates (barrier and plunger),
+    giving a correction (in nm) which will be added to ``rho`` for each gate.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    '''
     h_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    '''
+    An array with length equal to the total number of gates (barrier and plunger),
+    giving a correction (in nm) which will be added to ``h`` for each gate.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    '''
     plunger_peak:float|distribution.Distribution[float]=-7
+    '''
+    The peak value (in mV) of the potential at the nanowire due to the
+    plunger gates.
+    '''
     plunger_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    '''
+    An array with length equal to the number of plunger gates, giving a
+    correction (in mV) which will be added to ``plunger_peak`` for each gate.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    '''
     external_barrier_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=2.
+    '''
+    An array with length 2, giving a correction (in mV) which will be added
+    to ``barrier_peak`` for each external barrier gate.
+    If a float distribution is provided, an ndarray of the size 2
+    will be generated by drawing from the distribution twice.
+    '''
     barrier_peak:float|distribution.Distribution[float]=5.
+    '''
+    The peak value (in mV) of the potential at the nanowire due to the
+    barrier gates.
+    '''
     internal_barrier_peak_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    '''
+    An array with length equal to the number of internal barrier gates, giving
+    a correction (in mV) which will be added to ``barrier_peak`` for each gate.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    '''
     sensor_y:float|distribution.Distribution[float]=-250
+    '''
+    The average y-coordinate (in nm) of the sensors.
+    '''
     sensor_y_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    '''
+    An array with length equal to the total number of sensors, giving a
+    correction (in nm) which will be added to ``sensor_y`` for each sensor.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    '''
     sensor_x_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
+    '''
+    An array with length equal to the total number of sensors, giving the
+    offset of the x-coordinate of each sensor (in nm) relative to their
+    positions if they were evenly spaced along the nanoire.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    '''
     WKB_coef:float|distribution.Distribution[float]=.01
+    '''
+    Coefficient (with units :math:`\\frac{1}{nm\\sqrt{meV}}`) which goes in the exponent
+    while calculating the WKB probability, setting the strength of WKB tunneling.
+    ``WKB_coef`` should be equal to :math:`\\sqrt{2m}{\\hbar}`, where :math:`m` is the effective
+    mass of a particle, and :math`\\hbar` is the reduced Planck's constant.
+    '''
     v_F:float|distribution.Distribution[float]=3.0e13
-    
+    '''
+    The fermi velocity (in nm/s).
+    '''
 
     @classmethod
     def default(cls) -> Self:
@@ -588,13 +796,13 @@ def random_physics(randomization_params:PhysicsRandomization, num_physics:int|No
     randomization_params : PhysicsRandomization
         Meta-parameters which indicate how the ``PhysicsParameters`` should be
         randomized.
-    num_physics : int
+    num_physics : int, optional
         The number of ``PhysicsParameters`` sets to generate. 
 
     Returns
     -------
-    simulation.PhysicsParameters
-        The randomized set of physics parameters.
+    simulation.PhysicsParameters or list[PhysicsParameters]
+        The randomized physics parameters.
     '''
     global _rng
     r_p = randomization_params
@@ -708,14 +916,17 @@ def calc_csd(n_dots:int, physics:simulation.PhysicsParameters,
     V_x, V_y : ndarray[float]
         The possible x- and y-coordinates of the pixels in the diagram.
     V_gates : ndarray[float]
-        An array of length `n_dots` giving the voltages of each of the plunger
+        An array of length ``n_dots`` giving the voltages of each of the plunger
         gates. This is relevant only for plunger gates whose voltages remain
         constant over the whole diagram, and it contains values of the constant
         voltages. For the two plunger gates corresponding to the x- and y-axes
-        (`x_dot` and `y_dot`), the value of `V_gates` is arbitrary.
-    x_dot, y_dot : int
-        Integers between 0 and (n_dots - 1) inclusive, denoting the indeces of
-        the dots whose gate voltages are plotted on the x- or y-axes.
+        (``x_dot`` and ``y_dot``), the value of `V_gates` is arbitrary.
+    x_dot : int
+        An integer between 0 and (n_dots - 1) inclusive, denoting the
+        dot whose gate voltage is plotted on the x-axis.
+    y_dot : int
+        An integer between 0 and (n_dots - 1) inclusive, denoting the
+        dot whose gate voltage is plotted on the y-axis.
     numerics : NumericsParameters | None
         The numeric parameters to be used during the simulation.
     include_excited : bool
@@ -842,10 +1053,11 @@ def calc_2d_csd(physics:simulation.PhysicsParameters,
 def calc_transitions(dot_charges:NDArray[np.int_], are_dots_combined:NDArray[np.bool_]) \
                     -> tuple[NDArray[np.bool_], NDArray[np.bool_]]:
     '''
-    Calculates the locations and types of transitions.
+    Calculates the locations and types of transitions in a CSD.
 
     A transition is defined to be present at a pixel if it has a charge state
-    that varies from any of its adjacent neighbors.
+    that varies from any of its adjacent neighbors. However, a merged dot splitting
+    apart without any charges moving is not counted as a transition. 
 
     Parameters
     ----------
@@ -925,34 +1137,91 @@ class RaysOutput:
         total number of charges in each dot at each point.
         In the case of combined dots, the total number of charges will be
         entered in the left-most spot, with the other spots padded with zeros.
-    converged : ndarray[bool] | None
+    converged : ndarray[bool] or None
         An array with shape ``(n_centers, n_rays, resolution)``, indicating whether the
         calculation of n(x) properly converged at each point.
-    dot_transitions : ndarray[bool] | None
+    dot_transitions : ndarray[bool] or None
         An array with shape ``(n_centers, n_rays, resolution, n_dots)``, indicating whether
-        a transition in each dot occurs at each pisel in the diagram.
-    are_transitions_combined : ndarray[bool] | None
+        a transition in each dot occurs at each pixel in the diagram.
+    are_transitions_combined : ndarray[bool] or None
         An array with shape ``(n_centers, n_rays, resolution, n_dots-1)``, indicating at
         each point, whether a transition occurs on a combined dot
         comprised of dots on either side of each internal barrier.
-    excited_sensor : ndarray[float] | None
+    excited_sensor : ndarray[float] or None
         An array with shape ``(n_centers, n_rays, resolution, n_sensors)`` giving the
-        Coulomb potential at an excited state at each point at a specific sensor.
+        Coulomb potential in an excited state at each point for a specific sensor.
+    current : ndarray[float] or None
+        An array with shape ``(n_centers, n_rays, resolution)`` giving the
+        current across the nanowire at each point.
     '''
     physics:simulation.PhysicsParameters=field(default_factory=lambda:simulation.PhysicsParameters())
+    '''
+    The set of physics parameters used in the simulation.
+    '''
     centers:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    '''
+    An array with shape ``(n_centers, n_dots)`` indicating the points from
+    which rays should start.
+    '''
     rays:NDArray[np.floating[Any]]=field(default_factory=lambda:np.zeros(0, dtype=np.float64))
+    '''
+    An array with shape ``(n_rays, n_dots)`` indicating the direction and
+    length of from each ray that extends from a single center point.
+    '''
     resolution:int=0 # must be at least 2
+    '''
+    The number of points per ray to simulate.
+    '''
     sensor:NDArray[np.float32]=field(default_factory=lambda:np.zeros(0, dtype=np.float32))
+    '''
+    An array with shape ``(n_centers, n_rays, resolution, n_sensors)``
+    giving the Coulomb potential at each point at a specific sensor.
+    '''
     are_dots_occupied:NDArray[np.bool_]=field(default_factory=lambda:np.zeros(0, dtype=np.bool_))
+    '''
+    An array with shape ``(n_centers, n_rays, resolution, n_dots)``, indicating whether
+    each dot is occupied at each point.
+    '''
     are_dots_combined:NDArray[np.bool_]=field(default_factory=lambda:np.zeros(0, dtype=np.bool_))
+    '''
+    An array with shape ``(n_centers, n_rays, resolution, n_dots-1)``, indicating
+    at each point, whether the dots on each side of an
+    internal barrier are combined together (i.e. the barrier is too low).
+    '''
     dot_charges:NDArray[np.int_]=field(default_factory=lambda:np.zeros(0, dtype=np.int_))
+    '''
+    An array with shape ``(n_centers, n_rays, resolution, n_dots)``, indicating the
+    total number of charges in each dot at each point.
+    In the case of combined dots, the total number of charges will be
+    entered in the left-most spot, with the other spots padded with zeros.
+    '''
     converged:NDArray[np.bool_]|None=None
+    '''
+    An array with shape ``(n_centers, n_rays, resolution)``, indicating whether the
+    calculation of n(x) properly converged at each point.
+    '''
     dot_transitions:NDArray[np.bool_]|None=None
+    '''
+    An array with shape ``(n_centers, n_rays, resolution, n_dots)``, indicating whether
+    a transition in each dot occurs at each pixel in the diagram.
+    '''
     are_transitions_combined:NDArray[np.bool_]|None=None
+    '''
+    An array with shape ``(n_centers, n_rays, resolution, n_dots-1)``, indicating at
+    each point, whether a transition occurs on a combined dot
+    comprised of dots on either side of each internal barrier.
+    '''
     excited_sensor:NDArray[np.float32]|None=None
+    '''
+    An array with shape ``(n_centers, n_rays, resolution, n_sensors)`` giving the
+    Coulomb potential in an excited state at each point for a specific sensor.
+    '''
     current:NDArray[np.float32]|None=None
-    
+    '''
+    An array with shape ``(n_centers, n_rays, resolution)`` giving the
+    current across the nanowire at each point.
+    '''
+
     def _get_physics(self) -> simulation.PhysicsParameters:
         return self._physics
     def _set_physics(self, val:simulation.PhysicsParameters):
