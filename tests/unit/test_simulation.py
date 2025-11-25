@@ -168,27 +168,20 @@ class TestModuleFunctions:
         assert np.isclose(val3, val1)
 
     @staticmethod
-    def test_calc_effective_peaks():
+    def test_calc_effective_peak_matrix():
         gates = [
             simulation.GateParameters(mean=15, peak=1.3, rho=10, h=20, screen=40)
         ]
-        eff_peaks = simulation.calc_effective_peaks(gates)
-        assert eff_peaks.shape == (1,)
-        assert np.isclose(eff_peaks[0], 1.3)
+        epm = simulation.calc_effective_peak_matrix(gates)
+        assert epm.shape == (1,1)
+        assert np.isclose(epm[0,0], 1)
         gates = [
             simulation.GateParameters(mean=15, peak=1.3, rho=10, h=20, screen=40),
             simulation.GateParameters(mean=65, peak=1.3, rho=10, h=20, screen=40),            
         ]
-        eff_peaks = simulation.calc_effective_peaks(gates)
-        assert eff_peaks.shape == (2,)
-        assert eff_peaks[0] < 1.3
-        gates = [
-            simulation.GateParameters(mean=15, peak=1.3, rho=10, h=20, screen=40),
-            simulation.GateParameters(mean=65, peak=-1.3, rho=10, h=20, screen=40),            
-        ]
-        eff_peaks = simulation.calc_effective_peaks(gates)
-        assert eff_peaks.shape == (2,)
-        assert eff_peaks[0] > 1.3
+        epm = simulation.calc_effective_peak_matrix(gates)
+        assert epm.shape == (2,2)
+        assert epm[0,1] < 0
 
     @staticmethod
     def test_calc_V():

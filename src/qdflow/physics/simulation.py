@@ -172,11 +172,11 @@ class PhysicsParameters:
         The charge of a particle, -1 for electrons, +1 for holes.
     gates : list[GateParameters]
         List of ``GateParameters`` defining the relevant parameters for each the gates.
-    effective_peaks : ndarray[float] | None
-        The effective gate peaks after inluding effects of charge induced from other gates.
-        If `effective_peaks` is ``None``, it will be calculated via ``calc_effective_peaks(gates)``.
     K_mat : ndarray[float] | None
         2D array, with length in each dimension equal to ``len(x)``,
+    effective_peak_matrix : ndarray[float] or None
+        The correction matrix used to inlcude effects of charge induced on gates from other gates.
+        If absent, it will be automatically calculated.
         where ``K_mat[i, j]`` gives the value of the Coulomb interaction
         (in meV) between two particles at points ``x[i]`` and ``x[j]``.
         If ``K_mat`` is ``None``, it will be calculated using
@@ -256,7 +256,7 @@ class PhysicsParameters:
             GateParameters(mean=200, peak=-7),
         ]
     )
-    effective_peaks: NDArray[np.floating[Any]] | None = None
+    effective_peak_matrix: NDArray[np.floating[Any]] | None = None
     K_mat: NDArray[np.floating[Any]] | None = None
     K_0: float = 5
     sigma: float = 60
@@ -314,11 +314,11 @@ class PhysicsParameters:
     def _set_gates(self, val: list[GateParameters]):
         self._gates = [g.copy() for g in val]
 
-    def _get_effective_peaks(self) -> NDArray[np.floating[Any]] | None:
-        return self._effective_peaks
+    def _get_effective_peak_matrix(self) -> NDArray[np.floating[Any]] | None:
+        return self._effective_peak_matrix
 
-    def _set_effective_peaks(self, val: NDArray[np.floating[Any]] | None):
-        self._effective_peaks = (
+    def _set_effective_peak_matrix(self, val: NDArray[np.floating[Any]] | None):
+        self._effective_peak_matrix = (
             np.array(val, dtype=np.float64) if val is not None else None
         )
 
@@ -391,8 +391,8 @@ PhysicsParameters.sensors = property(
 PhysicsParameters.gates = property(
     PhysicsParameters._get_gates, PhysicsParameters._set_gates
 )  # type: ignore
-PhysicsParameters.effective_peaks = property(
-    PhysicsParameters._get_effective_peaks, PhysicsParameters._set_effective_peaks
+PhysicsParameters.effective_peak_matrix = property(
+    PhysicsParameters._get_effective_peak_matrix, PhysicsParameters._set_effective_peak_matrix
 )  # type: ignore
 PhysicsParameters.dot_regions = property(
     PhysicsParameters._get_dot_regions, PhysicsParameters._set_dot_regions
@@ -733,14 +733,24 @@ def calc_V_gate(gate_params: GateParameters, x, y, z, effective_peak=None):
         return v.item()
 
 
-def calc_effective_peaks(gate_param_list: list[GateParameters]) -> NDArray[np.floating[Any]]:
+def calc_effective_peak_matrix(gate_param_list: list[GateParameters]) -> NDArray[np.floating[Any]]:
     '''
-    Calculates the effective potential at each gate of a set of gates.
+    Calculates a correction matrix for gate potentials due to induced charges.
 
-    If more than one gate are in close proximity, the field from each gate will
-    induce charges on the others. This can be modeled by using an effective
-    potential ``peak`` rather than the true ``peak``.
+    ``gate_param_list`` contains the physical parameters defining each of the gates,
+    including for each gate, the value of the potential peak that would be measured
+    at the nanowire *in the absense of all other gates*.
+    
+    However, when more than one gate are brought close together, the electric field from
+    one gate induces charge on the other gates. The effect of the induced charge on
+    each gate is approximated by defining an "effective peak" as a linear combination
+    of each of the original gate peaks.
 
+    Specifically, the effective peak of each gate is given as
+    ``np.dot(effective_peak_matrix, gate_peaks)``.
+
+    This function calculates ``effective_peak_matrix`` from the geometry of the gates.
+    See `arXiv:2509.13298 <https://arxiv.org/abs/2509.13298>`_ for more details.
 
     Parameters
     ----------
@@ -750,7 +760,9 @@ def calc_effective_peaks(gate_param_list: list[GateParameters]) -> NDArray[np.fl
     Returns
     -------
     ndarray[float]
-        An array containing the effective potential peak of each gate.
+        A matrix with shape ``(num_gates, num_gates)`` which can be used to determine
+        corrections to the potential contributions from each of the gates due to induced
+        charges.
     '''
     gates = gate_param_list
     n_gates = len(gates)
@@ -765,8 +777,7 @@ def calc_effective_peaks(gate_param_list: list[GateParameters]) -> NDArray[np.fl
                 ) / calc_V_gate(
                     gates[j], gates[j].mean, 0, gates[j].rho - gates[j].h, 1
                 )
-    v_peak = np.array([g.peak for g in gates])
-    return np.dot(np.linalg.inv(c_mat), v_peak)
+    return np.linalg.inv(c_mat)
 
 
 @overload
@@ -775,7 +786,7 @@ def calc_V(
     x: float,
     y: float,
     z: float,
-    effective_peaks: None | NDArray[np.floating[Any]] = ...,
+    effective_peak_matrix: None | NDArray[np.floating[Any]] = ...,
 ) -> float: ...
 @overload
 def calc_V(
@@ -783,7 +794,7 @@ def calc_V(
     x: NDArray[np.floating[Any]],
     y: float | NDArray[np.floating[Any]],
     z: float | NDArray[np.floating[Any]],
-    effective_peaks: None | NDArray[np.floating[Any]] = ...,
+    effective_peak_matrix: None | NDArray[np.floating[Any]] = ...,
 ) -> NDArray[np.floating[Any]]: ...
 @overload
 def calc_V(
@@ -791,11 +802,10 @@ def calc_V(
     x: float | NDArray[np.floating[Any]],
     y: float | NDArray[np.floating[Any]],
     z: float | NDArray[np.floating[Any]],
-    effective_peaks: None | NDArray[np.floating[Any]] = ...,
+    effective_peak_matrix: None | NDArray[np.floating[Any]] = ...,
 ) -> float | NDArray[np.floating[Any]]: ...
 
-
-def calc_V(gate_param_list: list[GateParameters], x, y, z, effective_peaks=None):
+def calc_V(gate_param_list: list[GateParameters], x, y, z, effective_peak_matrix=None):
     '''
     Calculates the potential at a given set of points due to a list of gates.
 
@@ -805,23 +815,48 @@ def calc_V(gate_param_list: list[GateParameters], x, y, z, effective_peaks=None)
         The parameters defining each of the gates
     x, y, z : float or ndarray[float]
         The x, y, or z-values (in nm) of the points for which to calculate the potential
-    effective_peaks : None | ndarray[float]
-        An array of coefficents to multiply the ``peak`` of each gate to correct
-        for induced charge from the other gates.
-        If ``None``, it will be calculated automatically via ``calc_effective_peaks()``,
-        but it can be supplied here to avoid repeating the calculation every time
-        ``calc_V()`` is called.
+    effective_peak_matrix : ndarray[float], optional
+        A matrix with shape ``(num_gates, num_gates)`` used to calculate the
+        effective peak of each gate after correcting for the induced charge
+        from the other gates. If absent, it will be calculated automatically.
 
     Returns
     -------
     float or ndarray[float]
         The (approximate) potential at each of the input points due to the gate.
+
+    Notes
+    -----
+    ``gate_param_list`` contains the physical parameters defining each of the gates,
+    including for each gate, the value of the potential peak that would be measured
+    at the nanowire *in the absense of all other gates*.
+    
+    However, when more than one gate are brought close together, the electric field from
+    one gate induces charge on the other gates. The effect of the induced charge on
+    each gate is approximated by defining an "effective peak" as a linear combination
+    of each of the original gate peaks.
+
+    Specifically, the effective peak of each gate is given as
+    ``np.dot(effective_peak_matrix, gate_peaks)``.
+
+    By default, ``effective_peak_matrix`` is calculated automatically,
+    via ``calc_effective_peak_matrix(gate_param_list)``.
+    
+    If you plan to call ``calc_V()`` multiple times for the same set of gates at
+    different voltages (as is done when calculating a CSD), you can calculate
+    ``effective_peak_matrix`` once at the start and supply it to this function
+    to avoid repeating the calculation every time ``calc_V()`` is called.
+
+    Alternatively, if you wish to ignore the effects of induced charges, instead
+    treating gates as a uniform line charge, call ``calc_V()`` with the
+    ``effective_peak_matrix`` option set to ``np.identity(len(gate_param_list))``.
     '''
-    v_eff = (
-        effective_peaks
-        if effective_peaks is not None
-        else calc_effective_peaks(gate_param_list)
+    epm = (
+        effective_peak_matrix
+        if effective_peak_matrix is not None
+        else calc_effective_peak_matrix(gate_param_list)
     )
+    v_eff = np.dot(epm, np.array([g.peak for g in gate_param_list]))
     return np.sum(
         np.array(
             [calc_V_gate(g, x, y, z, v) for (g, v) in zip(gate_param_list, v_eff)]
@@ -898,7 +933,7 @@ class ThomasFermi:
             options for numeric calculations
         '''
 
-        self.effective_peaks: NDArray[np.floating[Any]] 
+        self.effective_peak_matrix: NDArray[np.floating[Any]] 
         '''
         ndarray[float]
             1D array containing the effective peaks of each gate after including

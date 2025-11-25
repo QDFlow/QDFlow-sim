@@ -766,14 +766,14 @@ def calc_csd(n_dots:int, physics:simulation.PhysicsParameters,
     ex_dot_charge = np.zeros(n_dots, dtype=np.int_)
     ex_are_dot_combined = np.zeros(n_dots-1, dtype=np.bool_)
     n_guess_prev = None
+    eff_peak_mat = simulation.calc_effective_peak_matrix(phys.gates)
     for j in range(N_v_y):
         n_guess = n_guess_prev
         for i in range(N_v_x):
             phys.gates[2*x_dot+1].peak = V_x[i]
             phys.gates[2*y_dot+1].peak = V_y[j]
-            eff_peaks = simulation.calc_effective_peaks(phys.gates)
-            phys.effective_peaks = eff_peaks
-            V = simulation.calc_V(phys.gates, phys.x, 0, 0, eff_peaks) 
+            phys.effective_peak_matrix = eff_peak_mat
+            V = simulation.calc_V(phys.gates, phys.x, 0, 0, eff_peak_mat) 
             phys.V = V
             tf = simulation.ThomasFermi(phys, numerics=numerics)
             tf_out = tf.run_calculations(n_guess=n_guess, include_current=include_current)
@@ -1143,7 +1143,7 @@ def calc_rays(physics:simulation.PhysicsParameters, centers:NDArray[np.floating[
     are_dot_combined = np.zeros(n_dots-1, dtype=np.bool_)
     ex_dot_charge = np.zeros(n_dots, dtype=np.int_)
     ex_are_dot_combined = np.zeros(n_dots-1, dtype=np.bool_)
-
+    eff_peak_mat = simulation.calc_effective_peak_matrix(phys.gates)
     for c_i in range(n_centers):
         n_guess_center = None
         for r_i in range(n_rays):
@@ -1167,9 +1167,8 @@ def calc_rays(physics:simulation.PhysicsParameters, centers:NDArray[np.floating[
                     pnt = centers[c_i] + i/(resolution-1) * rays[r_i]
                     for d_i in range(n_dots):
                         phys.gates[2*d_i+1].peak = pnt[d_i]
-                    eff_peaks = simulation.calc_effective_peaks(phys.gates)
-                    phys.effective_peaks = eff_peaks
-                    V = simulation.calc_V(phys.gates, phys.x, 0, 0, eff_peaks) 
+                    phys.effective_peak_matrix = eff_peak_mat
+                    V = simulation.calc_V(phys.gates, phys.x, 0, 0, eff_peak_mat) 
                     phys.V = V
                     tf = simulation.ThomasFermi(phys, numerics=numerics)
                     tf_out = tf.run_calculations(n_guess=n_guess, include_current=include_current)
