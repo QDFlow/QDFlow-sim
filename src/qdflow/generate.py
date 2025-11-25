@@ -395,8 +395,8 @@ class PhysicsRandomization:
     '''
     num_x_points:int=151
     num_dots:int=2
-    barrier_current:float=1e-5
-    short_circuit_current:float=1e4
+    barrier_current:float=1
+    short_circuit_current:float=1e10
     num_sensors:int=1
     multiply_gates_by_q:bool=True
 
@@ -426,7 +426,7 @@ class PhysicsRandomization:
     sensor_y:float|distribution.Distribution[float]=-250
     sensor_y_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
     sensor_x_variations:float|distribution.Distribution[float]|distribution.Distribution[NDArray[np.floating[Any]]]|NDArray[np.floating[Any]]=0
-    WKB_coef:float|distribution.Distribution[float]=.089
+    WKB_coef:float|distribution.Distribution[float]=.01
     v_F:float|distribution.Distribution[float]=3.0e13
     
 
@@ -554,8 +554,8 @@ def default_physics(n_dots:int=2) -> simulation.PhysicsParameters:
 
     physics = simulation.PhysicsParameters(
         x=x, q=-1, K_0=5, sigma=60, mu=.5, g_0=.0065, V_L=-.01, V_R=.01,
-        beta=100, kT=.01, c_k=1.2, screening_length=100, WKB_coef=.089,
-        v_F=3.0e13, barrier_current=1e-5, short_circuit_current=1e4
+        beta=100, kT=.01, c_k=1.2, screening_length=100, WKB_coef=.01,
+        v_F=3.0e13, barrier_current=1, short_circuit_current=1e10
     )
     
     def gate_peak(i):
