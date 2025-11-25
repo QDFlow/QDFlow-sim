@@ -101,8 +101,8 @@ class Distribution(ABC, Generic[T]):
         -------
         T | ndarray
             One or more samples drawn from the distribution.
-            If `size` is ``None``, a single value should be returned.
-            Otherwise, an NDArray with shape `size` should be returned, where
+            If ``size`` is ``None``, a single value should be returned.
+            Otherwise, an ndarray with shape ``size`` should be returned, where
             each element is independently drawn from the distribution.
         """
         pass
@@ -394,7 +394,7 @@ class AbsDistribution(Distribution[T], Generic[T]):
 
 class Delta(Distribution[T], Generic[T]):
     """
-    A delta-function distribution which always returns `value`.
+    A delta-function distribution which always returns ``value``.
 
     Parameters
     ----------
@@ -487,9 +487,9 @@ class Uniform(Distribution[float]):
 
 class LogNormal(Distribution[float]):
     """
-    A log-normal distribution defined by `mu` and `sigma`.
+    A log-normal distribution defined by ``mu`` and ``sigma``.
 
-    Note that `mu` and `sigma` are the mean and standard deviation of the
+    Note that ``mu`` and ``sigma`` are the mean and standard deviation of the
     underlying normal distribution, not of the log-normal distribution itself.
 
     Parameters
@@ -521,7 +521,7 @@ class LogNormal(Distribution[float]):
 
 class LogUniform(Distribution[float]):
     """
-    A log-uniform (reciprocal) distribution between `min` and `max`.
+    A log-uniform (reciprocal) distribution between ``min`` and ``max``.
 
     Parameters
     ----------
@@ -558,15 +558,15 @@ class LogUniform(Distribution[float]):
 
 class Binary(Distribution[T], Generic[T]):
     """
-    A binary (Bernoulli) distribution, which returns `success` with
-    probability `p`, and `fail` otherwise.
+    A binary (Bernoulli) distribution, which returns ``success`` with
+    probability ``p``, and ``fail`` otherwise.
 
     Parameters
     ----------
     p : float
         The probability `success` will be returned. Must be between 0 and 1.
     success : T
-        The value to return with probabilty `p`.
+        The value to return with probabilty ``p``.
     fail : T
         The value to return with probabilty ``1-p``.
     """
@@ -598,7 +598,7 @@ class Binary(Distribution[T], Generic[T]):
 class Discrete(Distribution[int]):
     """
     A uniform discrete distribution, which returns a value between
-    `min` (inclusive) and `max` (exclusive).
+    ``min`` (inclusive) and ``max`` (exclusive).
 
     Parameters
     ----------
@@ -686,13 +686,13 @@ class CorrelatedDistribution(Distribution[NDArray[Any]], Generic[T]):
 
         Returns
         -------
-        NDArray
+        ndarray
             One or more samples drawn from the distribution.
-            If `size` is ``None``, an array containing a single value for each
+            If ``size`` is ``None``, an array containing a single value for each
             variable should be returned.
             Otherwise, an array of shape ``(size, num_variables)`` should be
             returned, where elements with the same indeces corresponding to
-            `size` are correlated.
+            ``size`` are correlated.
         """
         pass
 
@@ -797,21 +797,21 @@ class CorrelatedDistribution(Distribution[NDArray[Any]], Generic[T]):
         self,
     ) -> tuple["CorrelatedDistribution.DependentDistribution[T]", ...]:
         """
-        Returns a set of linked, single-variable Distributions.
+        Returns a set of linked, single-variable distributions.
 
-        When ``draw()`` is called on one of these Distributions, values for all
+        When ``draw()`` is called on one of these distributions, values for all
         correlated variables are drawn, but only one variable is returned: the one
         corresponding to the ``Distribution`` on which ``draw()`` was called.
-        Afterwards, calling ``draw()`` for the other Distributions in the set will
+        Afterwards, calling ``draw()`` for the other distributions in the set will
         return the other drawn values.
 
-        If ``draw()`` is called a second time on one of the Distributions in a set
-        before it has been called on all of the other Distributions in the set,
+        If ``draw()`` is called a second time on one of the distributions in a set
+        before it has been called on all of the other distributions in the set,
         then previously drawn values will be cleared, this call to ``draw()`` will
         be treated as if it were the first, and a warning will be given.
 
         Similarly, if ``draw()`` is called with a different value of ``size``
-        for two Distributions in a set, then previously drawn values will be cleared,
+        for two distributions in a set, then previously drawn values will be cleared,
         and the most recent call to ``draw()`` will be treated as if it were the
         first, and a warning will be given.
         """
@@ -821,7 +821,7 @@ class CorrelatedDistribution(Distribution[NDArray[Any]], Generic[T]):
 
 class FullyCorrelated(CorrelatedDistribution[T], Generic[T]):
     """
-    A ``CorrelatedDistribution`` which returns `n` copies of the value drawn from
+    A ``CorrelatedDistribution`` which returns ``n`` copies of the value drawn from
     a ``Distribution``.
 
     Parameters
@@ -862,7 +862,7 @@ class MatrixCorrelated(CorrelatedDistribution[T], Generic[T]):
 
     Parameters
     ----------
-    matrix : NDArray
+    matrix : ndarray
         An array with shape ``(num_variables, len(distributions))``.
     distributions : Sequence[Distribution[T]]
         The distributions to draw independent values from.
@@ -892,8 +892,8 @@ class MatrixCorrelated(CorrelatedDistribution[T], Generic[T]):
 
 class SphericallyCorrelated(CorrelatedDistribution[float]):
     """
-    A ``CorrelatedDistribution`` which returns `n` variables drawn uniformly
-    from the surface of an `n`-dimensional hypershphere with the given radius
+    A ``CorrelatedDistribution`` which returns ``n`` variables drawn uniformly
+    from the surface of an ``n``-dimensional hypershphere with the given radius
     (or radius drawn from the given ``Distribution``).
 
     Parameters
