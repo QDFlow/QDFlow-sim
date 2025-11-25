@@ -6,15 +6,15 @@ Each ``NoiseGenerator`` object must be initialized with a ``NoiseParameters``
 object which contains parameters defining the strength of each type of noise.
 
 Often, a wide variety of noise types and strengths are desired in a dataset.
-This is accomplished by using different ``NoiseGenerator`` objects, each initiated
+This is accomplished by using different ``NoiseGenerator`` objects, each initialized
 by a different ``NoiseParameters`` object. Different ``NoiseParameters`` objects
 can be obtained with the ``random_noise_params()`` function.
 
 ``random_noise_params()`` generates ``NoiseParameters`` based on a set of
-Distributions cointained within the ``NoiseRandomizationParameters`` dataclass.
+distributions cointained within the ``NoiseRandomization`` dataclass.
 Thus there are two randomization steps:
 
-``NoiseRandomizationParameters`` metaparameters -> ``NoiseParameters`` parameters
+``NoiseRandomization`` metaparameters -> ``NoiseParameters`` parameters
 -> specific noise realization.
 
 Examples
@@ -22,7 +22,7 @@ Examples
 
 >>> from qdflow.physics import noise
 >>> from qdflow.util import distribution
->>> meta_params = noise.NoiseRandomizationParameters.default()
+>>> meta_params = noise.NoiseRandomization.default()
 >>> meta_params.unint_dot_mag = distribution.Uniform(0,.05) # adjust meta_params here
 
 >>> noise_params_1 = random_noise_params(meta_params)
@@ -88,31 +88,37 @@ class NoiseParameters:
     ----------
     white_noise_magnitude : float
         Magnitude of the white noise to add to the data. The noise at each pixel
-        is drawn from a Gaussian distribution with standard deviation `white_noise_magnitude`.
+        is drawn from a Gaussian distribution with standard deviation ``white_noise_magnitude``.
     pink_noise_magnitude : float
         Magnitude of the pink noise to add to the data. The noise at each pixel
-        will have standard deviation `pink_noise_magnitude`, but will have 1/f correlation.
-    telegraph_magnitude, telegraph_stdev : float
-        The magnitude and standard deviation of the telegraph noise to add to the data.
+        will have standard deviation ``pink_noise_magnitude``, but will have 1/f correlation.
+    telegraph_magnitude : float
+        The magnitude of the telegraph noise to add to the data.
         Each jump will add or subtract a constant drawn from a normal distribution
         with mean ``telegraph_magnitude/2`` and standard deviation ``telegraph_stdev/sqrt(2)``.
-        This means that the total jump distance will have mean and standard
-        deviation given by `telegraph_magnitude` and `telegraph_stdev`.
-    telegraph_low_pixels, telegraph_high_pixels : float
-        The average number of pixels before a jump from low to high (`telegraph_low_pixels`)
-        or from high to low (`telegraph_high_pixels`) in the telegraph noise.
+        This means that the total jump distance will have mean ``telegraph_magnitude``.
+    telegraph_stdev : float
+        The standard deviation of the telegraph noise to add to the data.
+        Each jump will add or subtract a constant drawn from a normal distribution
+        with mean ``telegraph_magnitude/2`` and standard deviation ``telegraph_stdev/sqrt(2)``.
+        This means that the total jump distance will have standard deviation ``telegraph_stdev``.
+    telegraph_low_pixels : float
+        The average number of pixels before a jump from low to high in the telegraph noise.
+        Must be greater than or equal to 1.
+    telegraph_high_pixels : float
+        The average number of pixels before a jump from high to low in the telegraph noise.
         Must be greater than or equal to 1.
     noise_axis : int
         The axis along which to add telegraph noise, latching, and sech blur.
     latching_pixels : float
-        The average number of pixels by which to shift each line when applying
+        The average number of pixels to extend past transitions when applying
         latching noise.
     latching_positive : bool
         Whether to shift in the positive or negative direction when applying
         latching noise.
     sech_blur_width : float
-        The width in pixels of the sech^2 blur.
-    unint_dot_mag : float
+        The width in pixels of the sech blur.
+    unint_dot_magnitude : float
         The strength of the unintended dot effects.
     unint_dot_spacing : ndarray[float] | None
         A vector (with length equal to the number of gates)
@@ -123,14 +129,13 @@ class NoiseParameters:
         The width of the unitended dot peaks.
     uint_dot_offset : float
         A value between 0 and 1 which defines by how much each unintended dot peak
-        should be offset, relative to the norm of `unint_dot_spacing`.
+        should be offset, relative to the norm of ``unint_dot_spacing``.
     coulomb_peak_width : float | None
         The width of the sech^2 curve for applying coulomb peak effects.
         If ``None``, no Coulomb peak effects will be applied.
     coulomb_peak_offset : float
         A value between 0 and 1 which defines by how much each sech^2 peak
-        should be offset applying coulomb peak effects, relative to the norm
-        of `coulomb_peak_spacing`.
+        should be offset applying coulomb peak effects, relative to ``coulomb_peak_spacing``.
     coulomb_peak_spacing : float
         A value which determines how far apart each sech^2 peak should be
         when applying coulomb peak effects.
@@ -139,41 +144,116 @@ class NoiseParameters:
         of the sensor-gate coupling per pixel for each gate.
         If ``None``, no sensor-gate coupling will be applied.
     use_pink_noise_all_dims : bool
-        Whether pink noise should be correlated in all dimensions (``True``), or
-        only along ``noise_axis`` (``False``).
+        Whether pink noise should be correlated in all dimensions (True), or
+        only along ``noise_axis`` (False).
     """
-
     white_noise_magnitude: float = 0.0
+    '''
+    Magnitude of the white noise to add to the data. The noise at each pixel
+    is drawn from a Gaussian distribution with standard deviation ``white_noise_magnitude``.
+    '''
     pink_noise_magnitude: float = 0.0
+    '''
+    Magnitude of the pink noise to add to the data. The noise at each pixel
+    will have standard deviation ``pink_noise_magnitude``, but will have 1/f correlation.
+    '''
     telegraph_magnitude: float = 0.0
+    '''
+    The magnitude of the telegraph noise to add to the data.
+    Each jump will add or subtract a constant drawn from a normal distribution
+    with mean ``telegraph_magnitude/2`` and standard deviation ``telegraph_stdev/sqrt(2)``.
+    This means that the total jump distance will have mean ``telegraph_magnitude``.
+    '''
     telegraph_stdev: float = 0.0
+    '''
+    The standard deviation of the telegraph noise to add to the data.
+    Each jump will add or subtract a constant drawn from a normal distribution
+    with mean ``telegraph_magnitude/2`` and standard deviation ``telegraph_stdev/sqrt(2)``.
+    This means that the total jump distance will have standard deviation ``telegraph_stdev``.
+    '''
     telegraph_low_pixels: float = 1.0
+    '''
+    The average number of pixels before a jump from low to high in the telegraph noise.
+    Must be greater than or equal to 1.
+    '''
     telegraph_high_pixels: float = 1.0
+    '''
+    The average number of pixels before a jump from high to low in the telegraph noise.
+    Must be greater than or equal to 1.
+    '''
     noise_axis: int = 0
+    '''
+    The axis along which to add telegraph noise, latching, and sech blur.
+    '''
     latching_pixels: float = 0.0
+    '''
+    The average number of pixels to extand past transitions when applying
+    latching noise.
+    '''
     latching_positive: bool = True
+    '''
+    Whether to shift in the positive or negative direction when applying
+    latching noise.
+    '''
     sech_blur_width: float = 0.0
+    '''
+    The width in pixels of the sech blur.
+    '''
     unint_dot_magnitude: float = 0.0
+    '''
+    The strength of the unintended dot effects.
+    '''
     unint_dot_spacing: NDArray[np.floating[Any]] | None = None
+    '''
+    A vector (with length equal to the number of gates)
+    normal to the unitended dot transition, with magnitude
+    equal to the spacing between transitions.
+    If ``None``, no unitended dot peaks will be applied.
+    '''
     unint_dot_width: float = 0.0
+    '''
+    The width of the unitended dot peaks.
+    '''
     unint_dot_offset: float = 0.0
+    '''
+    A value between 0 and 1 which defines by how much each unintended dot peak
+    should be offset, relative to the norm of ``unint_dot_spacing``.
+    '''
     coulomb_peak_spacing: float = 1.0
+    '''
+    A value which determines how far apart each sech^2 peak should be
+    when applying coulomb peak effects.
+    '''
     coulomb_peak_offset: float = 0.0
+    '''
+    A value between 0 and 1 which defines by how much each sech^2 peak
+    should be offset applying coulomb peak effects, relative to ``coulomb_peak_spacing``.
+    '''
     coulomb_peak_width: float | None = None
+    '''
+    The width of the sech^2 curve for applying coulomb peak effects.
+    If ``None``, no Coulomb peak effects will be applied.
+    '''
     sensor_gate_coupling: NDArray[np.floating[Any]] | None = None
+    '''
+    A vector with length equal to the number of gates, giving the value
+    of the sensor-gate coupling per pixel for each gate.
+    If ``None``, no sensor-gate coupling will be applied.
+    '''
     use_pink_noise_all_dims: bool = True
+    '''
+    Whether pink noise should be correlated in all dimensions (True), or
+    only along ``noise_axis`` (False).
+    '''
 
     def _get_unint_dot_spacing(self) -> NDArray[np.floating[Any]] | None:
         return self._unint_dot_spacing
-
     def _set_unint_dot_spacing(self, val: NDArray[np.floating[Any]] | None):
         self._unint_dot_spacing = (
             np.array(val, dtype=np.float64) if val is not None else None
         )
-
     def _get_sensor_gate_coupling(self) -> NDArray[np.floating[Any]] | None:
         return self._sensor_gate_coupling
-
     def _set_sensor_gate_coupling(self, val: NDArray[np.floating[Any]] | None):
         self._sensor_gate_coupling = (
             np.array(val, dtype=np.float64) if val is not None else None
@@ -240,14 +320,15 @@ class NoiseGenerator:
     White noise, Pink (1/f) noise, Telegraph noise, Latching, Coulomb peak,
     Sech blur, Unintended dot, Sensor-gate coupling.
 
-    When initiating this class, a NoiseParameters object should be provided
-    to define the strengths of each of the noise types.
+    To use this class, initiate a ``NoiseGenerator`` instance with the appropriate
+    ``NoiseParameters`` to define the strengths of each of the noise types.
+    Then use the ``calc_noisy_map()`` function, which will generate all
+    noise types and add them to the data map that is passed to it.
 
     Parameters
     ----------
     noise_parameters : NoiseParameters | dict[str, Any]
-        ``NoiseParameters`` object or dictionary that gives the parameters
-        used to generate noise.
+        The parameters used to define the noise strengths.
     rng : np.random.Generator
         Random number generator used to generate noise.
     """
@@ -268,11 +349,13 @@ class NoiseGenerator:
         self, data_map: NDArray[np.floating[Any]], peak_center: float, peak_width: float
     ) -> NDArray[np.floating[Any]]:
         """
-        Calculate sensor value from potential using a single sech^2 lineshape,
-        which is valid in the weak coupling regime of dot.
+        Calculates the sensor conductance from the potential.
+         
+        This is done using a single sech^2 lineshape,
+        which is valid in the weak coupling regime of dot. Specifically, data is transformed according to:
 
-        .. deprecated::
-            Prefer ``high_coupling_coulomb_peak()`` instead.
+        :math:`G = \\text{sech}^2\\frac{V - V_0}{W}`, where :math:`V` is the potential data,
+        :math:`V_0` is the peak center, and :math:`W` is the peak width.
 
         See: Beenakker, Phys. Rev. B 44, 1646.
 
@@ -280,14 +363,15 @@ class NoiseGenerator:
         ----------
         data_map : ndarray[float]
             The data to transform.
-        peak_center, peak_width : float
-            Parameters defining the shape of the sech function as follows:
-            ``sech((data_map-peak_center) / peak_width) ** 2``
+        peak_center : float
+            The center of the sech curve.
+        peak_width : float
+            The width of the sech curve.
 
         Returns
         -------
         ndarray[float]
-            `data_map` with sech^2 transformation applied.
+            ``data_map`` with the sech^2 transformation applied.
         """
         return 1 / np.cosh((data_map - peak_center) / peak_width) ** 2
 
@@ -299,10 +383,13 @@ class NoiseGenerator:
         peak_spacing: float,
     ) -> NDArray[np.floating[Any]]:
         """
-        Calculate sensor value from potential using a series of sech^2 functions.
+        Calculates the sensor conductance from the potential.
+         
+        This is done using a series of sech^2 functions. Specifically, data is transformed according to:
 
-        Specifically, returns a sum over ``i`` of the following:
-        ``sech((data_map - (i + peak_offset) * peak_spacing)) / peak_width) ** 2``
+        :math:`G = \\sum_i \\text{sech}^2\\frac{V - (i+\\alpha_\\text{offset})*\\Delta_V}{W}`,
+
+        where :math:`V` is the potential data, :math:`\\Delta_V` is the peak spacing, and :math:`W` is the peak width.
 
         See: Beenakker, Phys. Rev. B 44, 1646.
 
@@ -339,7 +426,7 @@ class NoiseGenerator:
         self, data_map: NDArray[np.floating[Any]], magnitude: float | NDArray[np.floating[Any]]
     ) -> NDArray[np.floating[Any]]:
         """
-        Adds white noise to `data_map`.
+        Adds white noise to ``data_map``.
 
         Parameters
         ----------
@@ -348,12 +435,12 @@ class NoiseGenerator:
         magnitude : float | ndarray[float]
             The standard deviation of the gaussian distribution from which to
             draw the noise at each pixel.
-            If an array is passed, it should have the same shape as `data_map`.
+            If an array is passed, it should have the same shape as ``data_map``.
 
         Returns
         -------
         ndarray[float]
-            `data_map` with white noise added to it.
+            ``data_map`` with white noise added to it.
         """
         return data_map + self.rng.normal(0, magnitude, data_map.shape)
 
@@ -362,7 +449,7 @@ class NoiseGenerator:
         axis: int | None = None
     ) -> NDArray[np.floating[Any]]:
         """
-        Adds pink (1/f) noise to `data_map`.
+        Adds pink (1/f) noise to ``data_map``.
 
         Parameters
         ----------
@@ -371,7 +458,7 @@ class NoiseGenerator:
         magnitude : float | ndarray[float]
             The standard deviation of the noise at each pixel. Note that pink
             noise is self-correlated.
-            If an array is passed, it should have the same shape as `data_map`.
+            If an array is passed, it should have the same shape as ``data_map``.
         axis : int
             Which axis the pink noise should correlated in, or ``None`` if the
             pink noise should be correlated in all directions.
@@ -379,7 +466,7 @@ class NoiseGenerator:
         Returns
         -------
         ndarray[float]
-            `data_map` with pink noise added to it.
+            ``data_map`` with pink noise added to it.
         """
         phases = self.rng.uniform(0, 2 * np.pi, data_map.shape)
         magnitudes = self.rng.normal(0, 1, data_map.shape)
@@ -424,12 +511,12 @@ class NoiseGenerator:
         axis: int,
     ) -> NDArray[np.floating[Any]]:
         """
-        Adds  `telegraph noise <en.wikipedia.org/wiki/burst_noise>`_ to `data_map`.
+        Adds telegraph noise to ``data_map``.
 
         Specifically, adds a constant value to a line of several continuous pixels,
         Then adds a different constant value to the next several pixels, etc.
         The number of pixels before each jump is drawn from a geometric distribution
-        with mean given by `ave_low_pixels` or `ave_high_pixels`,
+        with mean given by ``ave_low_pixels`` or ``ave_high_pixels``,
         and the constant value added is drawn from a normal distribution with
         mean +/- ``magnitude/2`` and standard deviation ``stdev/sqrt(2)``,
         with the sign alternating after each jump.
@@ -443,18 +530,18 @@ class NoiseGenerator:
             Each jump will add or subtract a constant drawn from a normal distribution
             with mean ``magnitude/2`` and standard deviation ``stdev/sqrt(2)``.
             This means that the total jump distance will have mean and standard
-            deviation given by `magnitude` and `stdev`.
-            If arrays are passed, they should have the same shape as `data_map`.
+            deviation given by ``magnitude`` and ``stdev``.
+            If arrays are passed, they should have the same shape as ``data_map``.
         ave_low_pixels, ave_high_pixels : float
-            The average number of pixels before a jump from low to high (`ave_low_pixels`)
-            or from high to low (`ave_high_pixels`). Must be greater than or equal to 1.
+            The average number of pixels before a jump from low to high (``ave_low_pixels``)
+            or from high to low (``ave_high_pixels``). Must be greater than or equal to 1.
         axis : int
             Which axis the telegraph noise should be applied along.
 
         Returns
         -------
         ndarray[float]
-            `data_map` with telegraph noise added to it.
+            ``data_map`` with telegraph noise added to it.
         """
         output = np.array(data_map)
         low_p = 1 / max(ave_low_pixels, 1)
@@ -509,13 +596,15 @@ class NoiseGenerator:
         shift_positive: bool = True,
     ) -> NDArray[np.floating[Any]]:
         """
-        Mimics latching effects by shifting each line in `data_map` by a random
+        Adds latching-like effects to ``data_map``.
+
+        Note, if excited data is available, ``latching_noise()`` is better to use instead.
+         
+        This is done by shifting each line in ``data_map`` by a random
         number of pixels along the direction of the line.
 
-        Specifically, ``line_shift_output[i_0, i_1, ... , i_axis, ...]`` is given by
-        ``data_map[i_0, i_1, ... , (i_axis - shift[i_0, ...]), ...]``,
-        where ``shift[i_0, ...] + 1`` is drawn from a geometric distribution
-        with mean ``ave_pixels + 1``, and does not depend on ``i_axis``.
+        Specifically, each line is shifted by ``x-1`` pixels, where ``x`` is
+        drawn from a geometric distribution with mean ``ave_pixels + 1``.
 
         Parameters
         ----------
@@ -526,16 +615,16 @@ class NoiseGenerator:
             Specifically, each line is shifted by ``x-1`` pixels, where ``x`` is
             drawn from a geometric distribution with mean ``ave_pixels + 1``.
         axis : int
-            Which axis to shift lines along. Each line running parallel to `axis`
-            will be shifted by some amount in the direction parallel to `axis`.
+            Which axis to shift lines along. Each line running parallel to ``axis``
+            will be shifted by some amount in the direction parallel to ``axis``.
         shift_positive : bool
             Whether to shift in the positive or negative direction.
-            If ``True``, each line will be shifted towards positive infinity.
+            If True, each line will be shifted towards positive infinity.
 
         Returns
         -------
         ndarray[float]
-            `data_map` with each line randomly shifted by some amount.
+            ``data_map`` with each line randomly shifted by some amount.
         """
         if len(data_map.shape) <= 1:
             return np.array(data_map)
@@ -586,10 +675,12 @@ class NoiseGenerator:
         shift_positive: bool = True,
     ) -> NDArray[np.floating[Any]]:
         """
-        Adds latching effects by selecting data from ``excited_data`` for a few
-        pixels after each transition.
+        Adds latching effects to ``data_map``.
+        
+        This is done by selecting data from ``excited_data`` in place of
+        from ``data_map`` for a few pixels after each transition.
 
-        The number of pixels ``shift`` is determined by drawing from a geometric
+        The number of pixels is determined by drawing from a geometric
         distribution with mean ``ave_pixels + 1`` and subtracting 1 from this
         result.
 
@@ -609,21 +700,21 @@ class NoiseGenerator:
             An array with shape ``(*(data_map.shape), n_dots-1)`` which indicates
             whether the dots on each side of a barrier are combined together.
         ave_pixels : float
-            The average number of pixels by which to shift each line.
-            Specifically, each line is shifted by ``x-1`` pixels, where ``x`` is
+            The average number of pixels for which to use excited data after each transition.
+            Specifically, excited data will be used for ``x-1`` pixels, where ``x`` is
             drawn from a geometric distribution with mean ``ave_pixels + 1``.
         axis : int
-            Which axis to shift lines along. Each line running parallel to `axis`
-            will be shifted by some amount in the direction parallel to `axis`.
+            The measurement axis. Excited data will be used for lines of pixels running
+            parallel to ``axis``.
         shift_positive : bool
-            Whether to shift in the positive or negative direction.
-            If ``True``, each line will be shifted towards positive infinity.
+            Whether to excited data should be used on the positive side of a transition (True),
+            or the negative side of a transition (False).
 
         Returns
         -------
         ndarray[float]
-            `data_map` with several pixels after each transition selected from
-            `excited_data`.
+            ``data_map`` with several pixels after each transition selected from
+            ``excited_data``.
         """
         if len(data_map.shape) <= 1:
             return np.array(data_map)
@@ -677,9 +768,11 @@ class NoiseGenerator:
         """
         Add a series of transitions with quantum dot lineshapes to data.
 
-        Specifically, for each pixel with coordinates ``x``, adds the following:
-        ``tanh((dot(x, spacing)/|spacing| - (i + offset)*|spacing|) / width)``
-        summed over integers ``i`` in range.
+        Specifically, for each pixel with coordinates :math:`\\vec{x}`, adds the following:
+
+        :math:`\\sum_i\\text{tanh}\\frac{1}{W}\\big[\\frac{\\vec{x}\\cdot\\vec{S}}{|\\vec{S}|} - (i + \\alpha_\\text{offset})*|\\vec{S}|\\big]`,
+        
+        where :math:`W` is the width of the dot peaks , and :math:`\\vec{S}` is the spacing vector.
 
         Parameters
         ----------
@@ -696,17 +789,17 @@ class NoiseGenerator:
             The width in pixels of the unitended dot peaks.
         offset : float
             A value between 0 and 1 which defines by how much each unintended dot peak
-            should be offset, relative to the norm of `unint_dot_spacing`.
+            should be offset, relative to the norm of ``unint_dot_spacing``.
         gate_data_matrix : ndarray[float] | None
             A matrix with shape ``(n_gates, len(data_map.shape))`` that indicates
-            how each of the gates changes as one of the axes of `data_map` changes.
+            how each of the gates changes as one of the axes of ``data_map`` changes.
             By default, an identity matrix will be used -- this assumes
             ``len(spacing) == len(data_map.shape)``.
 
         Returns
         -------
         ndarray[float]
-            `data_map` with unintended dot effects added.
+            ``data_map`` with unintended dot effects added.
         """
         spc = np.sqrt(np.sum(spacing**2))
         gdm = (
@@ -732,7 +825,7 @@ class NoiseGenerator:
         self, data_map: NDArray[np.floating[Any]], blur_width: float, noise_axis: int
     ) -> NDArray[np.floating[Any]]:
         """
-        Blurs `datamap` by convoluting with sech^2 kernel.
+        Blurs ``data_map`` by convolving with a sech^2 kernel.
 
         Parameters
         ----------
@@ -740,12 +833,12 @@ class NoiseGenerator:
             The data to blur.
         blur_width : float
             The width in pixels of the blur.
-            `data_map` is convolved with ``np.cosh(x/blur_width)**-2``
+            ``data_map`` is convolved with ``np.cosh(x/blur_width)**-2``
 
         Returns
         -------
         ndarray[float]
-            `data_map` with sech blur applied.
+            ``data_map`` with sech blur applied.
         """
         conv_max = max(int(np.ceil(blur_width * 3)), 3)
         conv_elems = 2 * conv_max + 1
@@ -769,7 +862,7 @@ class NoiseGenerator:
         gate_data_matrix: NDArray[np.floating[Any]] | None = None,
     ) -> NDArray[np.floating[Any]]:
         """
-        Add a gradient due to sensor-gate coupling to data.
+        Add a gradient due to sensor-gate coupling to ``data_map``.
 
         Parameters
         ----------
@@ -779,20 +872,20 @@ class NoiseGenerator:
             A vector with length equal to the number of gates, giving the value
             of the sensor-gate coupling per pixel for each gate.
         magnitude : float | ndarray[float]
-            The total sensor-gate coupling will be multiplied by `magnitude`.
+            The total sensor-gate coupling will be multiplied by ``magnitude``.
             Usually, this value should be set to 1, and the magnitude encoded in
-            `sensor_gate_coupling`.
-            If an array is passed, it should have the same shape as `data_map`.
+            ``sensor_gate_coupling``.
+            If an array is passed, it should have the same shape as ``data_map``.
         gate_data_matrix : ndarray[float] | None
             A matrix with shape ``(n_gates, len(data_map.shape))`` that indicates
-            how each of the gates changes as one of the axes of `data_map` changes.
+            how each of the gates changes as one of the axes of ``data_map`` changes.
             By default, an identity matrix will be used -- this assumes
             ``len(sensor_gate_coupling) == len(data_map.shape)``.
 
         Returns
         -------
         ndarray[float]
-            `data_map` with sensor-gate coupling effects added.
+            ``data_map`` with sensor-gate coupling effects added.
         """
         gdm = (
             gate_data_matrix
@@ -826,7 +919,7 @@ class NoiseGenerator:
         sensor_gate: bool | None = None,
     ) -> NDArray[np.floating[Any]]:
         """
-        Adds noise to `data_map` with parameters specified by ``self.noiseParameters``.
+        Adds noise to ``data_map``.
 
         Parameters
         ----------
@@ -853,7 +946,7 @@ class NoiseGenerator:
         noise_default : bool
             Whether to include all noise types (True) or no noise types (False)
             by default. Individual noise types can then be turned on or off
-            via the parameters `white_noise`, `pink_noise`, etc.
+            via the parameters ``white_noise``, ``pink_noise``, etc.
         white_noise : bool | None
             Whether to include white noise.
         pink_noise : bool | None
@@ -874,7 +967,7 @@ class NoiseGenerator:
         Returns
         -------
         ndarray[float]
-            `data_map` with various noise types added.
+            ``data_map`` with various noise types added.
         """
         param = self.noise_parameters
         noisy_map = np.array(data_map)
@@ -958,35 +1051,43 @@ class NoiseRandomization:
 
     Parameters
     ----------
+    n_gates : int
+        The number of plunger gates in the device.
     noise_axis : int
         The axis along which to add telegraph noise, latching, and sech blur.
     white_noise_magnitude : float | Distribution[float]
         Magnitude of the white noise to add to the data. The noise at each pixel
-        is drawn from a Gaussian distribution with standard deviation `white_noise_magnitude`.
+        is drawn from a Gaussian distribution with standard deviation ``white_noise_magnitude``.
     pink_noise_magnitude : float | Distribution[float]
         Magnitude of the pink noise to add to the data. The noise at each pixel
-        will have standard deviation `pink_noise_magnitude`, but will have 1/f correlation.
-    telegraph_magnitude, telegraph_relative_stdev : float | Distribution[float]
-        The magnitude and standard deviation of the telegraph noise to add to the data.
+        will have standard deviation ``pink_noise_magnitude``, but will have 1/f correlation.
+    telegraph_magnitude : float | Distribution[float]
+        The magnitude of the telegraph noise to add to the data.
         Each jump will add or subtract a constant drawn from a normal distribution
         with mean ``telegraph_magnitude/2`` and standard deviation ``telegraph_stdev/sqrt(2)``.
-        This means that the total jump distance will have mean and standard
-        deviation given by `telegraph_magnitude` and ``telegraph_stdev``.
+        This means that the total jump distance will have mean ``telegraph_magnitude``.
+    telegraph_relative_stdev : float | Distribution[float]
+        The relative standard deviation of the telegraph noise to add to the data.
+        Each jump will add or subtract a constant drawn from a normal distribution
+        with mean ``telegraph_magnitude/2`` and standard deviation ``telegraph_stdev/sqrt(2)``.
+        This means that the total jump distance will have standard deviation ``telegraph_stdev``.
         ``telegraph_stdev`` is found by multiplying ``telegraph_relative_stdev``
-        by `telegraph_magnitude`.
-    telegraph_low_pixels, telegraph_high_pixels : float | Distribution[float]
-        The average number of pixels before a jump from low to high (`telegraph_low_pixels`)
-        or from high to low (`telegraph_high_pixels`) in the telegraph noise.
+        by ``telegraph_magnitude``.
+    telegraph_low_pixels : float | Distribution[float]
+        The average number of pixels before a jump from low to high in the telegraph noise.
+        Must be greater than or equal to 1.
+    telegraph_high_pixels : float | Distribution[float]
+        The average number of pixels before a jump from high to low in the telegraph noise.
         Must be greater than or equal to 1.
     latching_pixels : float | Distribution[float]
-        The average number of pixels by which to shift each line when applying
+        The average number of pixels to extend past transitions when applying
         latching noise.
     latching_positive : bool | Distribution[bool]
         Whether to shift in the positive or negative direction when applying
         latching noise.
     sech_blur_width : float | Distribution[float]
-        The width in pixels of the sech^2 blur.
-    unint_dot_mag : float
+        The width in pixels of the sech blur.
+    unint_dot_magnitude : float | Distribution[float]
         The strength of the unintended dot effects.
     unint_dot_spacing : ndarray[float] | Distribution[float] | Distribution[ndarray] | None
         A vector (with length equal to the number of gates)
@@ -999,14 +1100,13 @@ class NoiseRandomization:
         The width of the unitended dot peaks.
     uint_dot_offset : float | Distribution[float]
         A value between 0 and 1 which defines by how much each unintended dot peak
-        should be offset, relative to the norm of `unint_dot_spacing`.
+        should be offset, relative to the norm of ``unint_dot_spacing``.
     coulomb_peak_width : float | Distribution[float] | None
         The width of the sech^2 curve for applying coulomb peak effects.
         If ``None``, no Coulomb peak effects will be applied.
     coulomb_peak_offset : float | Distribution[float]
         A value between 0 and 1 which defines by how much each sech^2 peak
-        should be offset applying coulomb peak effects, relative to the norm
-        of `coulomb_peak_spacing`.
+        should be offset applying coulomb peak effects, relative to ``coulomb_peak_spacing``.
     coulomb_peak_spacing : float | Distribution[float]
         A value which determines how far apart each sech^2 peak should be
         when applying coulomb peak effects.
@@ -1017,41 +1117,127 @@ class NoiseRandomization:
         will be generated by repeatedly drawing from the distribution.
         If ``None``, no sensor-gate coupling will be applied.
     use_pink_noise_all_dims : bool
-        Whether pink noise should be correlated in all dimensions (``True``), or
-        only along ``noise_axis`` (``False``).
+        Whether pink noise should be correlated in all dimensions (True), or
+        only along ``noise_axis`` (False).
     """
-
     n_gates: int = 2
+    '''
+    The number of plunger gates in the device.
+    '''
     noise_axis: int = 0
+    '''
+    The axis along which to add telegraph noise, latching, and sech blur.
+    '''
     use_pink_noise_all_dims: bool = True
-
+    '''
+    Whether pink noise should be correlated in all dimensions (True), or
+    only along ``noise_axis`` (False).
+    '''
     latching_positive: bool | Distribution[bool] = True
+    '''
+    Whether to shift in the positive or negative direction when applying
+    latching noise.
+    '''
     white_noise_magnitude: float | Distribution[float] = 0.0
+    '''
+    Magnitude of the white noise to add to the data. The noise at each pixel
+    is drawn from a Gaussian distribution with standard deviation ``white_noise_magnitude``.
+    '''
     pink_noise_magnitude: float | Distribution[float] = 0.0
+    '''
+    Magnitude of the pink noise to add to the data. The noise at each pixel
+    will have standard deviation ``pink_noise_magnitude``, but will have 1/f correlation.
+    '''
     telegraph_magnitude: float | Distribution[float] = 0.0
+    '''
+    The magnitude of the telegraph noise to add to the data.
+    Each jump will add or subtract a constant drawn from a normal distribution
+    with mean ``telegraph_magnitude/2`` and standard deviation ``telegraph_stdev/sqrt(2)``.
+    This means that the total jump distance will have mean ``telegraph_magnitude``.
+    '''
     telegraph_relative_stdev: float | Distribution[float] = 0.0
+    '''
+    The relative standard deviation of the telegraph noise to add to the data.
+    Each jump will add or subtract a constant drawn from a normal distribution
+    with mean ``telegraph_magnitude/2`` and standard deviation ``telegraph_stdev/sqrt(2)``.
+    This means that the total jump distance will have standard deviation ``telegraph_stdev``.
+    ``telegraph_stdev`` is found by multiplying ``telegraph_relative_stdev``
+    by ``telegraph_magnitude``.
+    '''
     telegraph_low_pixels: float | Distribution[float] = 1.0
+    '''
+    The average number of pixels before a jump from low to high in the telegraph noise.
+    Must be greater than or equal to 1.
+    '''
     telegraph_high_pixels: float | Distribution[float] = 1.0
+    '''
+    The average number of pixels before a jump from high to low in the telegraph noise.
+    Must be greater than or equal to 1.
+    '''
     latching_pixels: float | Distribution[float] = 0.0
+    '''
+    The average number of pixels to extend past transitions when applying
+    latching noise.
+    '''
     sech_blur_width: float | Distribution[float] = 0.0
+    '''
+    The width in pixels of the sech blur.
+    '''
     unint_dot_magnitude: float | Distribution[float] = 0.0
+    '''
+    The strength of the unintended dot effects.
+    '''
     unint_dot_spacing: (
         NDArray[np.floating[Any]]
         | Distribution[float]
         | Distribution[NDArray[np.floating[Any]]]
         | None
     ) = None
+    '''
+    A vector (with length equal to the number of gates)
+    normal to the unitended dot transition, with magnitude
+    equal to the spacing between transitions.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    If ``None``, no unitended dot peaks will be applied.
+    '''
     unint_dot_offset: float | Distribution[float] = 0.0
+    '''
+    A value between 0 and 1 which defines by how much each unintended dot peak
+    should be offset, relative to the norm of ``unint_dot_spacing``.
+    '''
     unint_dot_width: float | Distribution[float] = 0.0
+    '''
+    The width of the unitended dot peaks.
+    '''
     coulomb_peak_offset: float | Distribution[float] = 0.0
+    '''
+    A value between 0 and 1 which defines by how much each sech^2 peak
+    should be offset applying coulomb peak effects, relative to ``coulomb_peak_spacing``.
+    '''
     coulomb_peak_width: float | Distribution[float] | None = None
+    '''
+    The width of the sech^2 curve for applying coulomb peak effects.
+    If ``None``, no Coulomb peak effects will be applied.
+    '''
     coulomb_peak_spacing: float | Distribution[float] = 1.0
+    '''
+    A value which determines how far apart each sech^2 peak should be
+    when applying coulomb peak effects.
+    '''
     sensor_gate_coupling: (
         NDArray[np.floating[Any]]
         | Distribution[float]
         | Distribution[NDArray[np.floating[Any]]]
         | None
     ) = None
+    '''
+    A vector with length equal to the number of gates, giving the value
+    of the sensor-gate coupling per pixel for each gate.
+    If a float distribution is provided, an ndarray of the appropriate size
+    will be generated by repeatedly drawing from the distribution.
+    If ``None``, no sensor-gate coupling will be applied.
+    '''
 
     @classmethod
     def default(cls, q_positive: bool = False) -> Self:
@@ -1061,7 +1247,7 @@ class NoiseRandomization:
         Parameters
         ----------
         q_positive : bool
-            ``True`` if ``phyics_parameters.q`` is positive, ``False`` otherwise.
+            True if ``phyics_parameters.q`` is positive, False otherwise.
 
         Returns
         -------
