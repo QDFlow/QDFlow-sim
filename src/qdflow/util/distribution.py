@@ -57,6 +57,8 @@ array([11.626, 3.564, 12.042])    # NOT random, correlated with result_1
 array([-5.813, -1.782, -6.021])    # equal to result_1
 """
 
+from __future__ import annotations
+
 from typing import overload, TypeVar, Generic, Any, Sequence
 import numpy as np
 from numpy.typing import NDArray

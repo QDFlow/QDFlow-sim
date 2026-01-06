@@ -28,9 +28,11 @@ This result will vary if a different set of physical parameters ``phys_params``
 are supplied to the ``ThomasFermi`` constructor.
 '''
 
+from __future__ import annotations
+
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Self, overload
+from typing import Any, overload
 import warnings
 import scipy  # type: ignore[import-untyped]
 import scipy.special  # type: ignore[import-untyped]
@@ -75,7 +77,7 @@ def calc_K_mat(x: NDArray[np.floating[Any]], K_0: float, sigma: float) -> NDArra
     return K_matrix
 
 
-@dataclass(kw_only=True)
+@dataclass
 class GateParameters:
     '''
     Set of physical parameters defining a single gate.
@@ -121,7 +123,7 @@ class GateParameters:
     '''
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> Self:
+    def from_dict(cls, d: dict[str, Any]) -> "GateParameters":
         '''
         Creates a new ``GateParameters`` object from a ``dict`` of values.
 
@@ -153,7 +155,7 @@ class GateParameters:
         '''
         return dataclasses.asdict(self)
 
-    def copy(self) -> Self:
+    def copy(self) -> "GateParameters":
         '''
         Creates a copy of a ``GateParameters`` object.
 
@@ -165,8 +167,7 @@ class GateParameters:
         return dataclasses.replace(self)
 
 
-
-@dataclass(kw_only=True)
+@dataclass
 class PhysicsParameters:
     '''
     Set of physical parameters of a quantum dot nanowire.
@@ -437,7 +438,7 @@ class PhysicsParameters:
         self._dot_regions = np.array(val, dtype=np.float64) if val is not None else None
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> Self:
+    def from_dict(cls, d: dict[str, Any]) -> "PhysicsParameters":
         '''
         Creates a new ``PhysicsParameters`` object from a ``dict`` of values.
 
@@ -472,7 +473,7 @@ class PhysicsParameters:
         '''
         return dataclasses.asdict(self)
         
-    def copy(self) -> Self:
+    def copy(self) -> "PhysicsParameters":
         '''
         Creates a deep copy of a ``PhysicsParameters`` object.
 
@@ -507,7 +508,7 @@ PhysicsParameters.dot_regions = property(
 )  # type: ignore
 
 
-@dataclass(kw_only=True)
+@dataclass
 class NumericsParameters:
     '''
     Set of options for numeric calculations.
@@ -623,7 +624,7 @@ class NumericsParameters:
     '''
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> Self:
+    def from_dict(cls, d: dict[str, Any]) -> "NumericsParameters":
         '''
         Creates a new ``NumericsParameters`` object from a ``dict`` of values.
 
@@ -655,7 +656,7 @@ class NumericsParameters:
         '''
         return dataclasses.asdict(self)
 
-    def copy(self) -> Self:
+    def copy(self) -> "NumericsParameters":
         '''
         Creates a copy of a ``NumericsParameters`` object.
 
@@ -667,8 +668,7 @@ class NumericsParameters:
         return dataclasses.replace(self)
 
 
-
-@dataclass(kw_only=True)
+@dataclass
 class ThomasFermiOutput:
     '''
     Output of Thomas Fermi calculations. Some attributes may be ``None``
@@ -816,7 +816,7 @@ class ThomasFermiOutput:
         self._n = np.array(val, dtype=np.float64) if val is not None else None
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> Self:
+    def from_dict(cls, d: dict[str, Any]) -> "ThomasFermiOutput":
         '''
         Creates a new ``ThomasFermiOutput`` object from a ``dict`` of values.
 
@@ -848,7 +848,7 @@ class ThomasFermiOutput:
         '''
         return dataclasses.asdict(self)
 
-    def copy(self) -> Self:
+    def copy(self) -> "ThomasFermiOutput":
         '''
         Creates a copy of a ``ThomasFermiOutput`` object.
 

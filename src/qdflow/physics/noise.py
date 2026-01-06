@@ -45,19 +45,19 @@ is generated with a completely different white noise strength, pink noise streng
 amount of latching noise, etc.
 """
 
+from __future__ import annotations
+
 import numpy as np
 import scipy  # type: ignore[import-untyped]
 from numpy.typing import NDArray
-from typing import Any, Self, TypeVar
+from typing import Any, TypeVar
 import scipy.ndimage  # type: ignore[import-untyped]
 import dataclasses
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import copy
 
-# import .util.distribution as distribution
 from ..util.distribution import Distribution, LogNormal, LogUniform, Uniform, Normal
-from .simulation import ThomasFermi, ThomasFermiOutput, is_transition
-# from physics import simulation
+from .simulation import is_transition
 
 T = TypeVar("T")
 
@@ -79,7 +79,7 @@ def set_rng_seed(seed):
     _rng = np.random.default_rng(seed)
 
 
-@dataclass(kw_only=True)
+@dataclass
 class NoiseParameters:
     """
     Set of parameters used to describe the various types and strengths of noise.
@@ -260,7 +260,7 @@ class NoiseParameters:
         )
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> Self:
+    def from_dict(cls, d: dict[str, Any]) -> "NoiseParameters":
         """
         Creates a new ``NoiseParameters`` object from a ``dict`` of values.
 
@@ -292,7 +292,7 @@ class NoiseParameters:
         """
         return dataclasses.asdict(self)
 
-    def copy(self) -> Self:
+    def copy(self) -> "NoiseParameters":
         """
         Creates a copy of a ``NoiseParameters`` object.
 
@@ -1039,7 +1039,7 @@ class NoiseGenerator:
         return noisy_map
 
 
-@dataclass(kw_only=True)
+@dataclass
 class NoiseRandomization:
     """
     Meta-parameters used to determine how random ``NoiseParameters`` should
@@ -1240,7 +1240,7 @@ class NoiseRandomization:
     '''
 
     @classmethod
-    def default(cls, q_positive: bool = False) -> Self:
+    def default(cls, q_positive: bool = False) -> "NoiseRandomization":
         """
         Creates a new ``NoiseRandomization`` object with default values.
 
@@ -1280,7 +1280,7 @@ class NoiseRandomization:
         return output
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> Self:
+    def from_dict(cls, d: dict[str, Any]) -> "NoiseRandomization":
         """
         Creates a new ``NoiseRandomization`` object from a ``dict`` of values.
 
@@ -1319,7 +1319,7 @@ class NoiseRandomization:
                 output[f.name] = copy.deepcopy(old_val, memo=memo)
         return output
 
-    def copy(self) -> Self:
+    def copy(self) -> "NoiseRandomization":
         """
         Creates a copy of a ``NoiseRandomization`` object.
 

@@ -7,7 +7,7 @@ where = ["src"]
 
 [project]
 name = "qdflow"
-version = "1.0.1"
+version = "1.0.2"
 description = "Quantum dot simulation and noise modeling package"
 authors = [
   { name = "Donovan Buterakos", email = "dbuterak@umd.edu" },
@@ -19,7 +19,7 @@ authors = [
 keywords = ["qdflow", "quantum", "dot", "QD", "data", "dataset", "training",
   "learning", "ML", "tuning", "autotuning", "charge", "stability", "CSD", "ray"]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.7"
 license = { file = "LICENSE" }
 
 dependencies = [

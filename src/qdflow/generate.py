@@ -40,8 +40,10 @@ by using ``csd.sensor[:, :, sensor_num]``, where ``sensor_num`` is the index of
 the desired sensor (0 if just one sensor).
 '''
 
+from __future__ import annotations
+
 import numpy as np
-from typing import Any, Self, overload, ClassVar, TypeVar
+from typing import Any, overload, TypeVar
 from numpy.typing import NDArray
 from .physics import simulation as simulation
 from .util import distribution as distribution
@@ -68,8 +70,7 @@ def set_rng_seed(seed):
     _rng = np.random.default_rng(seed)
 
 
-
-@dataclass(kw_only=True)
+@dataclass
 class CSDOutput:
     '''
     Output of charge stability diagram calculations. Some attributes may be ``None``
@@ -274,7 +275,7 @@ class CSDOutput:
 
 
     @classmethod
-    def from_dict(cls, d:dict[str, Any]) -> Self:
+    def from_dict(cls, d:dict[str, Any]) -> "CSDOutput":
         '''
         Creates a new ``CSDOutput`` object from a ``dict`` of values.
 
@@ -310,7 +311,7 @@ class CSDOutput:
         return dataclasses.asdict(self)
     
 
-    def copy(self) -> Self:
+    def copy(self) -> "CSDOutput":
         '''
         Creates a copy of a ``CSDOutput`` object.
 
@@ -336,8 +337,7 @@ CSDOutput.excited_sensor = property(CSDOutput._get_excited_sensor, CSDOutput._se
 CSDOutput.current = property(CSDOutput._get_current, CSDOutput._set_current) # type: ignore
 
 
-
-@dataclass(kw_only=True)
+@dataclass
 class PhysicsRandomization:
     '''
     Meta-parameters used to determine how random ``PhysicsParameters`` should
@@ -639,7 +639,7 @@ class PhysicsRandomization:
     '''
 
     @classmethod
-    def default(cls) -> Self:
+    def default(cls) -> "PhysicsRandomization":
         '''
         Creates a new ``PhysicsRandomization`` object with default values.
 
@@ -688,7 +688,7 @@ class PhysicsRandomization:
 
 
     @classmethod
-    def from_dict(cls, d:dict[str, Any]) -> Self:
+    def from_dict(cls, d:dict[str, Any]) -> "PhysicsRandomization":
         '''
         Creates a new ``PhysicsRandomization`` object from a ``dict`` of values.
 
@@ -729,7 +729,7 @@ class PhysicsRandomization:
         return output
     
 
-    def copy(self) -> Self:
+    def copy(self) -> "PhysicsRandomization":
         '''
         Creates a copy of a ``PhysicsRandomization`` object.
 
@@ -1103,8 +1103,7 @@ def calc_transitions(dot_charges:NDArray[np.int_], are_dots_combined:NDArray[np.
     return is_transition, is_transition_combined
 
 
-
-@dataclass(kw_only=True)
+@dataclass
 class RaysOutput:
     '''
     Output of ray data calculations. Some attributes may be ``None``
@@ -1284,7 +1283,7 @@ class RaysOutput:
 
 
     @classmethod
-    def from_dict(cls, d:dict[str, Any]) -> Self:
+    def from_dict(cls, d:dict[str, Any]) -> "RaysOutput":
         '''
         Creates a new ``RaysOutput`` object from a ``dict`` of values.
 
@@ -1320,7 +1319,7 @@ class RaysOutput:
         return dataclasses.asdict(self)
     
 
-    def copy(self) -> Self:
+    def copy(self) -> "RaysOutput":
         '''
         Creates a copy of a ``RaysOutput`` object.
 
