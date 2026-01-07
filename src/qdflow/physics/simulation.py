@@ -523,9 +523,16 @@ class NumericsParameters:
         is provided, when calculating the particle density n(x).
     calc_n_rel_tol : float
         The relative tolerance to accept a solution for the particle density
-        n(x). The calculation will terminate when the difference ``delta_n``
+        n(x). The calculation will terminate if the difference ``delta_n``
         between successive iterations of n(x) is small enough that
-        ``norm(delta_n) < rel_tol * norm(n)``.
+        ``norm(delta_n) < rel_tol * norm(n)``, or when the ``abs_tol``
+        condition is satisfied.
+    calc_n_abs_tol : float
+        The absolute tolerance to accept a solution for the particle density
+        n(x). The calculation will terminate if the difference ``delta_n``
+        between successive iterations of n(x) is small enough that
+        ``norm(delta_n) * delta_x < abs_tol``, or when the ``rel_tol``
+        condition is satisfied.   
     calc_n_coulomb_steps : int
         The number of steps over which to turn on the Coulomb interaction
         when calculating the particle density n(x).
@@ -570,9 +577,18 @@ class NumericsParameters:
     calc_n_rel_tol: float = 1e-3
     '''
     The relative tolerance to accept a solution for the particle density
-    n(x). The calculation will terminate when the difference ``delta_n``
+    n(x). The calculation will terminate if the difference ``delta_n``
     between successive iterations of n(x) is small enough that
-    ``norm(delta_n) < rel_tol * norm(n)``.
+    ``norm(delta_n) < rel_tol * norm(n)``, or when the ``abs_tol``
+    condition is satisfied.
+    '''
+    calc_n_abs_tol: float = 1e-4
+    '''
+    The absolute tolerance to accept a solution for the particle density
+    n(x). The calculation will terminate if the difference ``delta_n``
+    between successive iterations of n(x) is small enough that
+    ``norm(delta_n) * delta_x < abs_tol``, or when the ``rel_tol``
+    condition is satisfied.
     '''
     calc_n_coulomb_steps: int = 1
     '''
@@ -1386,6 +1402,7 @@ class ThomasFermi:
         mu: float,
         delta_x: float,
         rel_tol: float,
+        abs_tol: float,
         coulomb_steps: int,
         use_n_guess: bool,
         max_iterations: int,
@@ -1421,9 +1438,16 @@ class ThomasFermi:
             The spacing (in nm) between successive x-values.
         rel_tol : float
             The relative tolerance to accept a solution.
-            The calculation will terminate when the difference ``delta_n``
+            The calculation will terminate if the difference ``delta_n``
             between successive iterations of n(x) is small enough that
-            ``norm(delta_n)**2 < rel_tol**2 * norm(n) * norm(n_prev)``.
+            ``norm(delta_n)**2 < rel_tol**2 * norm(n) * norm(n_prev)``,
+            or if the condition for ``abs_tol`` is satisfied.
+        abs_tol : float
+            The absolute tolerance to accept a solution.
+            The calculation will terminate if the difference ``delta_n``
+            between successive iterations of n(x) is small enough that
+            ``norm(delta_n) * delta_x < abs_tol``,
+            or if the condition for ``rel_tol`` is satisfied.
         coulomb_steps : int
             The number of steps over which to turn on the Coulomb interaction.
         use_n_guess : bool
@@ -1522,7 +1546,8 @@ class ThomasFermi:
                     n_norm = np.linalg.norm(n)
 
             if (i > coulomb_steps or use_n_guess) and (
-                np.linalg.norm(n - n_prev) ** 2 < (rel_tol) ** 2 * n_norm * np_norm
+                (np.linalg.norm(n - n_prev) ** 2 < (rel_tol) ** 2 * n_norm * np_norm)
+                or (np.linalg.norm(n - n_prev) * delta_x < abs_tol)
             ):
                 converged = True
                 break
@@ -1591,6 +1616,7 @@ class ThomasFermi:
         delta_x = (physics.x[-1] - physics.x[0]) / (len(physics.x) - 1)
 
         rel_tol = numerics.calc_n_rel_tol
+        abs_tol = numerics.calc_n_abs_tol
         coulomb_steps = numerics.calc_n_coulomb_steps
         max_iterations = (numerics.calc_n_max_iterations_no_guess
                 if n_guess is None else numerics.calc_n_max_iterations_guess)
@@ -1606,7 +1632,7 @@ class ThomasFermi:
 
         # calculate
         n, phi, converged = ThomasFermi.calc_n_numba(n, qV, K_mat, g_0,
-                beta, mu, delta_x, rel_tol, coulomb_steps, use_n_guess,
+                beta, mu, delta_x, rel_tol, abs_tol, coulomb_steps, use_n_guess,
                 max_iterations, use_combination_method, g0_dx_K_plus_1_inv)
         if not converged:
             warnings.warn("ThomasFermi.calc_n() failed to converge.",
