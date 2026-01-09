@@ -679,8 +679,8 @@ class PhysicsRandomization:
             barrier_peak=5.,
             internal_barrier_peak_variations=distribution.Uniform(-1.5, 1.5),
             sensor_y=-250,
-            sensor_y_variations=distribution.Uniform(-.5, .5),
-            sensor_x_variations=distribution.Uniform(-.35, .35),
+            sensor_y_variations=distribution.Normal(0, 30),
+            sensor_x_variations=distribution.Normal(0, 30),
             WKB_coef=.089,
             v_F=3.0e13
         )
