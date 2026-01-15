@@ -1190,9 +1190,9 @@ class ThomasFermi:
             If absent, it will be automatically calculated.
         '''
 
-        self.g0_dx_K_plus_1_inv: NDArray[np.floating[Any]]
+        self.g0_dx_K_plus_1_inv: NDArray[np.floating[Any]] | None
         '''
-        ndarray[float]
+        ndarray[float] | None
             Inverse of ``(g_0 * delta_x * K_mat + identity)``.
         '''
 
@@ -1482,9 +1482,7 @@ class ThomasFermi:
 
         n = n_0
         n_prev = n
-        n_prev_prev = n
         phi = np.dot(K_mat, n) * delta_x
-        last_i_averaged = 0
         converged = False
         if use_combination_method:
             mu_pos = not np.all(mu - qV <= 0)
@@ -1492,21 +1490,12 @@ class ThomasFermi:
             t_scale = 0.9
 
         for i in range(max_iterations):
-            # average last 2 values of n if oscillating between two values
-            if (
-                (not use_combination_method)
-                and (i - last_i_averaged >= 3)
-                and (np.linalg.norm(n - n_prev) > np.linalg.norm(n - n_prev_prev))
-            ):
-                n = (n + n_prev) / 2
-                last_i_averaged = i
             # turn on the Coulomb over some number of steps
             # only if a guess for phi was not provided
             if not use_n_guess and i < coulomb_steps:
                 phi = ((i + 1) / coulomb_steps) * np.dot(K_mat, n) * delta_x
             else:
                 phi = np.dot(K_mat, n) * delta_x
-            n_prev_prev = n_prev
             n_prev = n
             mqvp = mu - qV - phi
             n = polylog_f_numba(mqvp)
@@ -1560,7 +1549,7 @@ class ThomasFermi:
     @staticmethod
     def calc_n(physics:PhysicsParameters, numerics:NumericsParameters,
                V:NDArray[np.floating[Any]], K_mat:NDArray[np.floating[Any]],
-               g0_dx_K_plus_1_inv:NDArray[np.floating[Any]],
+               g0_dx_K_plus_1_inv:NDArray[np.floating[Any]]|None,
                n_guess:NDArray[np.floating[Any]]|None=None
                ) -> tuple[NDArray[np.floating[Any]], NDArray[np.floating[Any]], bool]:
         '''
@@ -1583,8 +1572,9 @@ class ThomasFermi:
             A 2D array with shape ``(len(x), len(x))``,
             where ``K_mat[i, j]`` gives the value of the Coulomb interaction
             (in meV) between two particles at points ``x[i]`` and ``x[j]``.
-        g0_dx_K_plus_1_inv : ndarray[float]
-            Inverse of ``(g_0 * delta_x * K_mat + identity)``.
+        g0_dx_K_plus_1_inv : ndarray[float] | None
+            Inverse of ``(g_0 * delta_x * K_mat + identity)``, or None to calculate
+            it automatically if needed.
         n_guess : ndarray[float], optional
             Initial guess (in 1/nm) for the particle density n(x).
             If absent, an array of zeros will be used.
@@ -1630,10 +1620,14 @@ class ThomasFermi:
             use_n_guess = False
             n = np.zeros(len(qV))
 
+        mat_inv = g0_dx_K_plus_1_inv if use_combination_method else np.array([[0.]])
+        if mat_inv is None:
+            mat_inv = np.linalg.inv(g_0 * delta_x * K_mat + np.identity(len(K_mat)))
+
         # calculate
         n, phi, converged = ThomasFermi.calc_n_numba(n, qV, K_mat, g_0,
                 beta, mu, delta_x, rel_tol, abs_tol, coulomb_steps, use_n_guess,
-                max_iterations, use_combination_method, g0_dx_K_plus_1_inv)
+                max_iterations, use_combination_method, mat_inv)
         if not converged:
             warnings.warn("ThomasFermi.calc_n() failed to converge.",
                           ConvergenceWarning)
@@ -2970,7 +2964,7 @@ class ThomasFermi:
             if self.physics.K_mat is None
             else self.physics.K_mat
         )
-        self.g0_dx_K_plus_1_inv = np.array([])
+        self.g0_dx_K_plus_1_inv = None
         if self.numerics.calc_n_use_combination_method:
             delta_x = (self.physics.x[-1] - self.physics.x[0]) / (len(self.physics.x) - 1)
             self.g0_dx_K_plus_1_inv = (
