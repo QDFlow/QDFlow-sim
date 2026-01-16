@@ -15,3 +15,10 @@ pip install qdflow
 # Documentaion
 
 Documentation is available at https://qdflow-sim.readthedocs.io/.
+
+# Dependencies
+
+* numpy >= 1.21.3
+* scipy >= 1.8
+* networkx >= 2.8
+* numba >= 0.55
