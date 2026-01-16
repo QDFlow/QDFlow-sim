@@ -25,6 +25,11 @@ extensions = [
     'sphinx_rtd_theme',
     'sphinx.ext.napoleon',
     'myst_nb',
+    "sphinx.ext.mathjax",
+]
+
+myst_enable_extensions = [
+    "dollarmath",
 ]
 
 templates_path = ['_templates']
