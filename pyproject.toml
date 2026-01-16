@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=65.0", "wheel"]
+requires = ["setuptools>=80.9", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -10,17 +10,20 @@ name = "qdflow"
 version = "1.0.2"
 description = "Quantum dot simulation and noise modeling package"
 authors = [
-  { name = "Donovan Buterakos", email = "dbuterak@umd.edu" },
+  { name = "Donovan Buterakos"},
   { name = "Sandesh S. Kalantre" },
   { name = "Joshua Ziegler" },
   { name = "Jacob M. Taylor" },
-  { name = "Justyna P. Zwolak", email = "jpzwolak@nist.gov" },
+  { name = "Justyna P. Zwolak" },
+  { email = "dbuterak@umd.edu" },
+  { email = "jpzwolak@nist.gov" },
 ]
 keywords = ["qdflow", "quantum", "dot", "QD", "data", "dataset", "training",
   "learning", "ML", "tuning", "autotuning", "charge", "stability", "CSD", "ray"]
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
+license = "GPL-2.0-or-later"
+license-files = ["LICENSE"]
 
 dependencies = [
   "numpy>=1.21.3",
