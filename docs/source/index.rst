@@ -20,9 +20,16 @@ API
 
 .. autosummary::
    :toctree: _autosummary
+   :caption: API
    :recursive:
 
    qdflow.generate
    qdflow.physics.simulation
    qdflow.physics.noise
    qdflow.util.distribution
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorial
+
+   tutorial

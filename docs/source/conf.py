@@ -24,11 +24,12 @@ extensions = [
     'sphinxcontrib.jquery',
     'sphinx_rtd_theme',
     'sphinx.ext.napoleon',
+    'myst_nb',
 ]
 
 templates_path = ['_templates']
 exclude_patterns = []
-
+nb_execution_mode = "off"
 autosummary_generate = True
 autodoc_typehints = "none"
 toc_object_entries_show_parents = 'hide'
